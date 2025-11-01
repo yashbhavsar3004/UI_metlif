@@ -3,19 +3,18 @@ import {
   AppBar,
   Toolbar,
   Box,
-  Button,
-  Menu,
-  MenuItem,
-  IconButton,
   Drawer,
   List,
   ListItem,
   ListItemButton,
   ListItemText,
+  ListItemIcon,
   Divider,
   Typography,
-  Container,
+  IconButton,
+  Collapse,
   Stack,
+  Button,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -23,222 +22,284 @@ import {
   Person as PersonIcon,
   Search as SearchIcon,
   ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
 } from "@mui/icons-material";
 import { Link } from "react-router-dom";
+import { useSidebar } from "../contexts/SidebarContext";
+
+export const drawerWidth = 280;
 
 const Navbar = () => {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEls, setAnchorEls] = useState({});
+  const { sidebarOpen, toggleSidebar } = useSidebar();
+  const [expandedItems, setExpandedItems] = useState({});
+  const [imageError, setImageError] = useState({});
 
-
-
-  const handleToggleMobile = () => {
-    setMobileOpen((prev) => !prev);
+  const handleImageError = (location) => {
+    setImageError((prev) => ({ ...prev, [location]: true }));
   };
+
+  const navItems = [
+    {
+      label: "SOLUTIONS",
+      subItems: ["Example link 1", "Example link 2", "Example link 3"],
+    },
+    {
+      label: "SUPPORT",
+      subItems: ["Example link 1", "Example link 2", "Example link 3"],
+    },
+    {
+      label: "ABOUT US",
+      subItems: ["Example link 1", "Example link 2", "Example link 3"],
+    },
+    {
+      label: "RESOURCES",
+      subItems: ["Example link 1", "Example link 2", "Example link 3"],
+    },
+  ];
 
 
   const handleToggleExpand = (label) => {
     setExpandedItems((prev) => ({
       ...prev,
-      [key]: event.currentTarget,
+      [label]: !prev[label],
     }));
   };
 
   const sidebarContent = (
-    <Box sx={{ width: drawerWidth, height: "100%", display: "flex", flexDirection: "column" }}>
-      {/* Logo Section - Only show when sidebar is open */}
-      {sidebarOpen && (
+    <Box sx={{ width: drawerWidth, height: "100%" }}>
+      {/* Logo Section */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          p: 2,
+          borderBottom: "1px solid #e6e6e6",
+        }}
+      >
         <Box
+          component={Link}
+          to="/"
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
-            p: 2,
-            borderBottom: "1px solid #e6e6e6",
-            flexShrink: 0,
+            textDecoration: "none",
           }}
         >
+          {!imageError.sidebar ? (
+            <Box
+              component="img"
+              src="https://www.metlife.com/content/dam/metlifecom/us/icons-header/MetLife.png"
+              alt="MetLife"
+              crossOrigin="anonymous"
+              onError={() => handleImageError('sidebar')}
+              sx={{
+                height: 30,
+                display: "block",
+                maxWidth: "100%",
+                objectFit: "contain",
+              }}
+            />
+          ) : (
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                color: "#0066cc",
+                fontSize: "1.25rem",
+              }}
+            >
+              MetLife
+            </Typography>
+          )}
+        </Box>
+        <IconButton
+          onClick={toggleSidebar}
+          sx={{ display: { sm: "none" } }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </Box>
+
+      {/* Navigation Items */}
+      <List sx={{ pt: 2 }}>
+        {navItems.map((item) => {
+          const isExpanded = expandedItems[item.label];
+          return (
+            <React.Fragment key={item.label}>
+              <ListItem disablePadding>
+                <ListItemButton
+                  onClick={() => handleToggleExpand(item.label)}
+                  sx={{
+                    py: 1.5,
+                    px: 2,
+                    "&:hover": {
+                      backgroundColor: "rgba(0, 0, 0, 0.04)",
+                    },
+                  }}
+                >
+                  <ListItemText
+                    primary={item.label}
+                    primaryTypographyProps={{
+                      fontSize: "0.8125rem",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.6px",
+                      fontWeight: 400,
+                    }}
+                  />
+                  <ListItemIcon sx={{ minWidth: "auto" }}>
+                    {isExpanded ? (
+                      <ExpandLessIcon fontSize="small" />
+                    ) : (
+                      <ExpandMoreIcon fontSize="small" />
+                    )}
+                  </ListItemIcon>
+                </ListItemButton>
+              </ListItem>
+              <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  {item.subItems.map((subItem, index) => (
+                    <ListItem key={index} disablePadding>
+                      <ListItemButton
+                        component={Link}
+                        to="#"
+                        sx={{
+                          pl: 4,
+                          py: 1,
+                          "&:hover": {
+                            backgroundColor: "rgba(0, 0, 0, 0.04)",
+                          },
+                        }}
+                      >
+                        <ListItemText
+                          primary={subItem}
+                          primaryTypographyProps={{
+                            fontSize: "0.875rem",
+                          }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              </Collapse>
+            </React.Fragment>
+          );
+        })}
+      </List>
+
+      <Divider sx={{ my: 2 }} />
+
+      {/* Utilities Section */}
+      <List>
+        <ListItem disablePadding>
+          <ListItemButton
+            component={Link}
+            to="#"
+            sx={{
+              py: 1.5,
+              px: 2,
+              "&:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+            }}
+          >
+            <ListItemIcon>
+              <PersonIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="LOG IN"
+              primaryTypographyProps={{
+                fontSize: "0.8125rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.6px",
+              }}
+            />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton
+            sx={{
+              py: 1.5,
+              px: 2,
+              "&:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+            }}
+          >
+            <ListItemIcon>
+              <SearchIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="SEARCH"
+              primaryTypographyProps={{
+                fontSize: "0.8125rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.6px",
+              }}
+            />
+          </ListItemButton>
+        </ListItem>
+      </List>
+    </Box>
+  );
+
+  return (
+    <>
+      {/* Top AppBar */}
+      <AppBar
+        position="fixed"
+        sx={{
+          backgroundColor: "#fff",
+          color: "#000",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+      >
+        <Toolbar>
+          <IconButton
+            color="inherit"
+            edge="start"
+            onClick={toggleSidebar}
+            sx={{ mr: 2 }}
+          >
+            <MenuIcon />
+          </IconButton>
           <Box
             component={Link}
             to="/"
             sx={{
-              display: "flex",
+              display: { xs: "flex", sm: "none" },
               alignItems: "center",
               textDecoration: "none",
             }}
           >
-            <img
-              src="https://www.metlife.com/content/dam/metlifecom/us/icons-header/MetLife.png"
-              alt="MetLife"
-              onError={() => handleImageError('sidebar')}
-              onLoad={() => {
-                setImageError((prev) => ({ ...prev, sidebar: false }));
-              }}
-              style={{
-                height: '30px',
-                display: imageError.sidebar ? 'none' : 'block',
-                maxWidth: '100%',
-                objectFit: 'contain',
-              }}
-            />
-            {imageError.sidebar && (
+            {!imageError.appbar ? (
+              <Box
+                component="img"
+                src="https://www.metlife.com/content/dam/metlifecom/us/icons-header/MetLife.png"
+                alt="MetLife"
+                crossOrigin="anonymous"
+                onError={() => handleImageError('appbar')}
+                sx={{
+                  height: 30,
+                  display: "block",
+                  maxWidth: "100%",
+                  objectFit: "contain",
+                }}
+              />
+            ) : (
               <Typography
                 variant="h6"
                 sx={{
                   fontWeight: 700,
-                  color: "#000",
-                  fontSize: "1.25rem",
+                  color: "#0066cc",
+                  fontSize: "1rem",
                 }}
               >
                 MetLife
               </Typography>
             )}
           </Box>
-          <IconButton
-            onClick={toggleSidebar}
-            sx={{ 
-              display: { sm: "none" },
-              "&:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.04)",
-              },
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </Box>
-      )}
-
-      {/* Navigation Items - Removed */}
-
-      {/* Utilities Section */}
-      <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "flex-start", pt: sidebarOpen ? 2 : 0 }}>
-        <List>
-          <ListItem disablePadding>
-            <ListItemButton
-              component={Link}
-              to="#"
-              sx={{
-                py: 1.5,
-                px: 2,
-                "&:hover": {
-                  backgroundColor: "rgba(0, 0, 0, 0.04)",
-                },
-              }}
-            >
-              <ListItemIcon>
-                <PersonIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary="LOG IN"
-                primaryTypographyProps={{
-                  fontSize: "0.8125rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.6px",
-                }}
-              />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton
-              sx={{
-                py: 1.5,
-                px: 2,
-                "&:hover": {
-                  backgroundColor: "rgba(0, 0, 0, 0.04)",
-                },
-              }}
-            >
-              <ListItemIcon>
-                <SearchIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary="SEARCH"
-                primaryTypographyProps={{
-                  fontSize: "0.8125rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.6px",
-                }}
-              />
-            </ListItemButton>
-          </ListItem>
-        </List>
-      </Box>
-    </Box>
-  );
-
-  return (
-    <AppBar
-      position="static"
-      sx={{
-        backgroundColor: "#fff",
-        color: "#000",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-      }}
-    >
-      <Container maxWidth="xl">
-        <Toolbar
-          disableGutters
-          sx={{
-            minHeight: { xs: 56, sm: 64 },
-            justifyContent: "space-between",
-            py: 1,
-          }}
-        >
-          {/* Mobile menu button */}
-          <IconButton
-            color="inherit"
-            aria-label="toggle navigation"
-            edge="start"
-            onClick={toggleSidebar}
-            sx={{ 
-              mr: 2,
-              "&:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.04)",
-              },
-            }}
-          >
-            {mobileOpen ? <CloseIcon /> : <MenuIcon />}
-          </IconButton>
-          {/* Logo in AppBar - Only show when sidebar is closed */}
-          {!sidebarOpen && (
-            <Box
-              component={Link}
-              to="/"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                textDecoration: "none",
-                mr: 2,
-              }}
-            >
-              <img
-                src="https://www.metlife.com/content/dam/metlifecom/us/icons-header/MetLife.png"
-                alt="MetLife"
-                onError={() => handleImageError('appbar')}
-                onLoad={() => {
-                  setImageError((prev) => ({ ...prev, appbar: false }));
-                }}
-                style={{
-                  height: '30px',
-                  display: imageError.appbar ? 'none' : 'block',
-                  maxWidth: '100%',
-                  objectFit: 'contain',
-                }}
-              />
-              {imageError.appbar && (
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 700,
-                    color: "#000",
-                    fontSize: "1rem",
-                  }}
-                >
-                  MetLife
-                </Typography>
-              )}
-            </Box>
-          )}
           <Box sx={{ flexGrow: 1 }} />
           <Stack direction="row" spacing={1} sx={{ display: { xs: "none", sm: "flex" } }}>
             <Button
@@ -251,7 +312,6 @@ const Navbar = () => {
                 fontSize: "0.8125rem",
                 letterSpacing: "0.6px",
                 fontWeight: 400,
-                minWidth: "auto",
                 "&:hover": {
                   backgroundColor: "rgba(0, 0, 0, 0.04)",
                 },
@@ -263,40 +323,20 @@ const Navbar = () => {
               color="inherit"
               aria-label="search"
               sx={{
-                textTransform: "uppercase",
-                fontSize: "0.8125rem",
-                letterSpacing: "0.6px",
                 "&:hover": {
                   backgroundColor: "rgba(0, 0, 0, 0.04)",
                 },
               }}
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                }}
-              >
-                <SearchIcon sx={{ fontSize: "1.125rem" }} />
-                <Typography
-                  component="span"
-                  sx={{
-                    fontSize: "0.8125rem",
-                    letterSpacing: "0.6px",
-                    display: { xs: "none", sm: "inline" },
-                  }}
-                >
-                  SEARCH
-                </Typography>
-              </Box>
+              <SearchIcon />
             </IconButton>
           </Stack>
         </Toolbar>
-      </Container>
+      </AppBar>
 
-      {/* Mobile Drawer */}
+      {/* Left Sidebar Drawer */}
       <Drawer
+        variant="persistent"
         anchor="left"
         open={sidebarOpen}
         sx={{
@@ -311,7 +351,6 @@ const Navbar = () => {
             width: drawerWidth,
             boxSizing: "border-box",
             borderRight: "1px solid #e6e6e6",
-            backgroundColor: "#fff",
             top: 64,
             height: "calc(100% - 64px)",
             transition: (theme) =>
@@ -320,13 +359,12 @@ const Navbar = () => {
                 duration: theme.transitions.duration.enteringScreen,
               }),
             overflowX: "hidden",
-            color: "#000",
           },
         }}
       >
-        {mobileMenu}
+        {sidebarContent}
       </Drawer>
-    </AppBar>
+    </>
   );
 };
 
