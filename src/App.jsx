@@ -1,12 +1,14 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Box } from "@mui/material";
 import { SidebarProvider, useSidebar } from "./contexts/SidebarContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import Navbar, { drawerWidth } from "./components/Navbar";
 import HomePage from "./pages/HomePage";
 import "./App.css";
 import ClaimForm from "./pages/ClaimForm";
 import AdminDashboard from "./pages/AdminDashboard";
 import MyPolicies from "./pages/MyPolicies";
+import Login from "./pages/Login";
 
 const MainContent = () => {
   const { sidebarOpen } = useSidebar();
@@ -33,6 +35,7 @@ const MainContent = () => {
         <Route path="/claims-submission" element={<ClaimForm />} />
         <Route path="/agent-dashboard" element={<AdminDashboard />} />
         <Route path="/my-policies" element={<MyPolicies />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
     </Box>
   );
@@ -41,12 +44,14 @@ const MainContent = () => {
 function App() {
   return (
     <BrowserRouter>
-      <SidebarProvider>
-        <Box sx={{ display: "flex" }}>
-          <Navbar />
-          <MainContent />
-        </Box>
-      </SidebarProvider>
+      <AuthProvider>
+        <SidebarProvider>
+          <Box sx={{ display: "flex" }}>
+            <Navbar />
+            <MainContent />
+          </Box>
+        </SidebarProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

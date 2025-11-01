@@ -12,7 +12,6 @@ import {
   Divider,
   Typography,
   IconButton,
-  Collapse,
   Stack,
   Button,
 } from "@mui/material";
@@ -20,15 +19,13 @@ import {
   Menu as MenuIcon,
   Close as CloseIcon,
   Person as PersonIcon,
-  Search as SearchIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
   Description as DescriptionIcon,
   Dashboard as DashboardIcon,
   Policy as PolicyIcon,
 } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
 import { useSidebar } from "../contexts/SidebarContext";
+import { useAuth } from "../contexts/AuthContext";
 
 export const drawerWidth = 280;
 
@@ -37,6 +34,7 @@ const Navbar = () => {
   const [expandedItems, setExpandedItems] = useState({});
   const [imageError, setImageError] = useState({});
   const navigate = useNavigate();
+  const { role, user, logout } = useAuth();
 
   const handleImageError = (location) => {
     setImageError((prev) => ({ ...prev, [location]: true }));
@@ -122,133 +120,107 @@ const Navbar = () => {
         </Box>
       )}
 
+      {/* Show logged in user name under logo when available */}
+      {sidebarOpen && user && (
+        <Box sx={{ p: 2, borderBottom: '1px solid #f0f0f0', display: 'flex', flexDirection: 'column' }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+            {user.name}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {user.email}
+          </Typography>
+        </Box>
+      )}
+
       {/* Navigation Items - Removed */}
 
       {/* New Sidebar Navigation Buttons */}
       <Box sx={{ pt: sidebarOpen ? 1 : 0 }}>
         <List>
-          <ListItem disablePadding>
-            <ListItemButton
-              onClick={() => {
-                navigate("/claim-submition");
-                // close sidebar on small screens
-                if (sidebarOpen) toggleSidebar();
-              }}
-              sx={{
-                py: 1.5,
-                px: 2,
-                "&:hover": {
-                  backgroundColor: "rgba(0, 0, 0, 0.04)",
-                },
-              }}
-            >
-              <ListItemIcon>
-                <DescriptionIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary="CLAIMS SUBMISSION"
-                primaryTypographyProps={{
-                  fontSize: "0.8125rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.6px",
+          {role === 'customer' && (
+            <>
+              <ListItem disablePadding>
+                <ListItemButton
+                  onClick={() => {
+                    navigate('/claim-submition');
+                    if (sidebarOpen) toggleSidebar();
+                  }}
+                  sx={{ py: 1.5, px: 2, '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)' } }}
+                >
+                  <ListItemIcon>
+                    <DescriptionIcon />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="CLAIMS SUBMISSION"
+                    primaryTypographyProps={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.6px' }}
+                  />
+                </ListItemButton>
+              </ListItem>
+
+              <ListItem disablePadding>
+                <ListItemButton
+                  onClick={() => {
+                    navigate('/my-policies');
+                    if (sidebarOpen) toggleSidebar();
+                  }}
+                  sx={{ py: 1.5, px: 2, '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)' } }}
+                >
+                  <ListItemIcon>
+                    <PolicyIcon />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="MY POLICIES"
+                    primaryTypographyProps={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.6px' }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            </>
+          )}
+
+          {role === 'agent' && (
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={() => {
+                  navigate('/agent-dashboard');
+                  if (sidebarOpen) toggleSidebar();
                 }}
-              />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton
-              onClick={() => {
-                navigate("/my-policies");
-                if (sidebarOpen) toggleSidebar();
-              }}
-              sx={{
-                py: 1.5,
-                px: 2,
-                "&:hover": {
-                  backgroundColor: "rgba(0, 0, 0, 0.04)",
-                },
-              }}
-            >
-              <ListItemIcon>
-                <PolicyIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary="MY POLICIES"
-                primaryTypographyProps={{
-                  fontSize: "0.8125rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.6px",
+                sx={{ py: 1.5, px: 2, '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)' } }}
+              >
+                <ListItemIcon>
+                  <DashboardIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="DASHBOARD"
+                  primaryTypographyProps={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.6px' }}
+                />
+              </ListItemButton>
+            </ListItem>
+          )}
+
+          {!role && (
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={() => {
+                  navigate('/login');
+                  if (sidebarOpen) toggleSidebar();
                 }}
-              />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton
-              onClick={() => {
-                navigate("/agent-dashboard");
-                if (sidebarOpen) toggleSidebar();
-              }}
-              sx={{
-                py: 1.5,
-                px: 2,
-                "&:hover": {
-                  backgroundColor: "rgba(0, 0, 0, 0.04)",
-                },
-              }}
-            >
-              <ListItemIcon>
-                <DashboardIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary="DASHBOARD"
-                primaryTypographyProps={{
-                  fontSize: "0.8125rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.6px",
-                }}
-              />
-            </ListItemButton>
-          </ListItem>
+                sx={{ py: 1.5, px: 2, '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)' } }}
+              >
+                <ListItemIcon>
+                  <PersonIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="LOGIN"
+                  primaryTypographyProps={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.6px' }}
+                />
+              </ListItemButton>
+            </ListItem>
+          )}
         </List>
         <Divider />
       </Box>
 
-      {/* Utilities Section */}
-      <Box
-        sx={{
-          flexGrow: 1,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "flex-start",
-          pt: sidebarOpen ? 2 : 0,
-        }}
-      >
-        <List>
-          <ListItem disablePadding>
-            <ListItemButton
-              sx={{
-                py: 1.5,
-                px: 2,
-                "&:hover": {
-                  backgroundColor: "rgba(0, 0, 0, 0.04)",
-                },
-              }}
-            >
-              <ListItemIcon>
-                <PersonIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary="LOG IN"
-                primaryTypographyProps={{
-                  fontSize: "0.8125rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.6px",
-                }}
-              />
-            </ListItemButton>
-          </ListItem>
-        </List>
-      </Box>
+      {/* Utilities Section (empty) */}
     </Box>
   );
 
@@ -324,21 +296,40 @@ const Navbar = () => {
             spacing={1}
             sx={{ display: { xs: "none", sm: "flex" } }}
           >
-            <Button
-              startIcon={<PersonIcon />}
-              sx={{
-                color: "inherit",
-                textTransform: "uppercase",
-                fontSize: "0.8125rem",
-                letterSpacing: "0.6px",
-                fontWeight: 400,
-                "&:hover": {
-                  backgroundColor: "rgba(0, 0, 0, 0.04)",
-                },
-              }}
-            >
-              LOG IN
-            </Button>
+              {!role ? (
+                <Button
+                  startIcon={<PersonIcon />}
+                  onClick={() => navigate('/login')}
+                  sx={{
+                    color: 'inherit',
+                    textTransform: 'uppercase',
+                    fontSize: '0.8125rem',
+                    letterSpacing: '0.6px',
+                    fontWeight: 400,
+                    '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' },
+                  }}
+                >
+                  LOG IN
+                </Button>
+              ) : (
+                <Button
+                  startIcon={<PersonIcon />}
+                  onClick={() => {
+                    logout();
+                    navigate('/');
+                  }}
+                  sx={{
+                    color: 'inherit',
+                    textTransform: 'uppercase',
+                    fontSize: '0.8125rem',
+                    letterSpacing: '0.6px',
+                    fontWeight: 400,
+                    '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' },
+                  }}
+                >
+                  LOG OUT
+                </Button>
+              )}
           </Stack>
         </Toolbar>
       </AppBar>
