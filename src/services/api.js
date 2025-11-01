@@ -46,7 +46,10 @@ export const claimFormAPI = {
   // Submit manual claim form
   submitClaimForm: async (formData) => {
     try {
-      const response = await api.post("/api/claims", formData);
+      const response = await api.post(
+        "https://gatewayf2-hbhndubgcehfa7de.canadacentral-01.azurewebsites.net/claims/api/claims",
+        formData
+      );
       return response.data;
     } catch (error) {
       throw error;

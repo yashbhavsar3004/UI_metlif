@@ -10,6 +10,7 @@ import {
   Button,
   Container,
   FormControl,
+  FormHelperText,
   Grid,
   InputLabel,
   MenuItem,
@@ -63,54 +64,54 @@ const CLAIM_TYPES = [
 ];
 
 const MANUAL_FORM_FIELDS = [
-  { 
+  {
     label: "Claim Number",
     name: "claimNo",
     sm: 6,
     icon: "📝",
     placeholder: "Enter claim number",
-    description: "Your unique claim reference number"
+    description: "Your unique claim reference number",
   },
-  { 
+  {
     label: "Customer ID",
     name: "customerId",
     sm: 6,
     icon: "🆔",
     placeholder: "Enter customer ID",
-    description: "Your MetLife customer identification"
+    description: "Your MetLife customer identification",
   },
-  { 
+  {
     label: "Claim Amount",
     name: "amount",
     type: "number",
     sm: 6,
     icon: "💰",
     placeholder: "Enter claim amount",
-    description: "Total amount being claimed"
+    description: "Total amount being claimed",
   },
-  { 
+  {
     label: "Nominee Name",
     name: "nominee",
     sm: 6,
     icon: "👥",
     placeholder: "Enter nominee name",
-    description: "Name of the beneficiary"
+    description: "Name of the beneficiary",
   },
-  { 
+  {
     label: "Bank Account",
     name: "bankAccountNo",
     sm: 6,
     icon: "🏦",
     placeholder: "Enter bank account number",
-    description: "Account for claim settlement"
+    description: "Account for claim settlement",
   },
-  { 
+  {
     label: "Claimant Name",
     name: "nameOfClaimant",
     sm: 6,
     icon: "👤",
     placeholder: "Enter claimant name",
-    description: "Name of person filing the claim"
+    description: "Name of person filing the claim",
   },
 ];
 
@@ -209,7 +210,7 @@ const ClaimForm = () => {
           const selectedDate = new Date(value);
           const today = new Date();
           today.setHours(0, 0, 0, 0); // Reset time part for accurate date comparison
-          
+
           if (selectedDate > today) {
             error = "Date of incident cannot be in the future";
           }
@@ -378,7 +379,6 @@ const ClaimForm = () => {
     }
 
     try {
-      console.log("Uploading PDF:", pdfFile.name);
       await claimFormAPI.uploadPDFForm(pdfFile);
 
       setSuccess(true);
@@ -406,10 +406,6 @@ const ClaimForm = () => {
 
     setLoading(false);
   };
-
-  // ========================================================================
-  // Sub-Render Functions
-  // ========================================================================
 
   const renderUploadForm = () => (
     <>
@@ -450,85 +446,111 @@ const ClaimForm = () => {
   const renderManualForm = () => (
     <Grid container spacing={3}>
       {/* --- Dynamic Input Fields in pairs --- */}
-      {Array.from({ length: Math.ceil(MANUAL_FORM_FIELDS.length / 2) }).map((_, rowIndex) => (
-        <Grid container item spacing={3} key={rowIndex} sx={{ width: '100%', m: 0 }}>
-          {MANUAL_FORM_FIELDS.slice(rowIndex * 2, rowIndex * 2 + 2).map((field) => (
-            <Grid item xs={12} sm={6} key={field.name} sx={{ flex: 1, minWidth: '50%' }}>
-              <Box sx={{ mb: 0.5 }}>
-                <Typography 
-                  variant="caption" 
-                  sx={{ 
-                    color: 'text.secondary', 
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 0.5
-                  }}
+      {Array.from({ length: Math.ceil(MANUAL_FORM_FIELDS.length / 2) }).map(
+        (_, rowIndex) => (
+          <Grid
+            container
+            item
+            spacing={3}
+            key={rowIndex}
+            sx={{ width: "100%", m: 0 }}
+          >
+            {MANUAL_FORM_FIELDS.slice(rowIndex * 2, rowIndex * 2 + 2).map(
+              (field) => (
+                <Grid
+                  item
+                  xs={12}
+                  sm={6}
+                  key={field.name}
+                  sx={{ flex: 1, minWidth: "50%" }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <span>{field.icon}</span>
-                    {field.label}
+                  <Box sx={{ mb: 0.5 }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "text.secondary",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 0.5,
+                      }}
+                    >
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <span>{field.icon}</span>
+                        {field.label}
+                      </Box>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "text.disabled",
+                          pl: 3,
+                        }}
+                      >
+                        {field.description}
+                      </Typography>
+                    </Typography>
                   </Box>
-                  <Typography 
-                    variant="caption" 
-                    sx={{ 
-                      color: 'text.disabled',
-                      pl: 3
+                  <TextField
+                    fullWidth
+                    placeholder={field.placeholder}
+                    name={field.name}
+                    value={formData[field.name]}
+                    onChange={handleInputChange(field.name)}
+                    error={!!fieldErrors[field.name]}
+                    helperText={fieldErrors[field.name]}
+                    type={field.type || "text"}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "background.paper",
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                          backgroundColor: "action.hover",
+                        },
+                        "&.Mui-focused": {
+                          backgroundColor: "background.paper",
+                          boxShadow: "0 0 0 2px rgba(25, 118, 210, 0.2)",
+                        },
+                      },
                     }}
-                  >
-                    {field.description}
-                  </Typography>
-                </Typography>
-              </Box>
-              <TextField
-                fullWidth
-                placeholder={field.placeholder}
-                name={field.name}
-                value={formData[field.name]}
-                onChange={handleInputChange(field.name)}
-                error={!!fieldErrors[field.name]}
-                helperText={fieldErrors[field.name]}
-                type={field.type || "text"}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'background.paper',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      backgroundColor: 'action.hover',
-                    },
-                    '&.Mui-focused': {
-                      backgroundColor: 'background.paper',
-                      boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.2)',
-                    },
-                  },
-                }}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      ))}
+                  />
+                </Grid>
+              )
+            )}
+          </Grid>
+        )
+      )}
 
       {/* --- Claim Type and Date Row --- */}
       <Grid container item spacing={3} justifyContent="center" sx={{ mt: 2 }}>
         {/* --- Claim Type Select --- */}
         <Grid item xs={12} sm={10} md={9}>
           <Box sx={{ mb: 0.5 }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "text.secondary",
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
               <span>🏥</span> Claim Type
             </Typography>
           </Box>
-          <FormControl 
-            fullWidth 
+          <FormControl
+            fullWidth
             error={!!fieldErrors.claimType}
             sx={{
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'background.paper',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  backgroundColor: 'action.hover',
+              "& .MuiOutlinedInput-root": {
+                backgroundColor: "background.paper",
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  backgroundColor: "action.hover",
                 },
-                '&.Mui-focused': {
-                  backgroundColor: 'background.paper',
-                  boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.2)',
+                "&.Mui-focused": {
+                  backgroundColor: "background.paper",
+                  boxShadow: "0 0 0 2px rgba(25, 118, 210, 0.2)",
                 },
               },
             }}
@@ -539,19 +561,26 @@ const ClaimForm = () => {
               onChange={handleInputChange("claimType")}
             >
               <MenuItem value="" disabled>
-                <Typography sx={{ color: 'text.secondary' }}>Select claim type</Typography>
+                <Typography sx={{ color: "text.secondary" }}>
+                  Select claim type
+                </Typography>
               </MenuItem>
               {CLAIM_TYPES.map((type) => (
                 <MenuItem key={type} value={type.toLowerCase()}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <span>{
-                      type === 'Health' ? '🏥' :
-                      type === 'Life' ? '❤️' :
-                      type === 'Vehicle' ? '🚗' :
-                      type === 'Travel' ? '✈️' :
-                      type === 'Property' ? '🏠' :
-                      '📋'
-                    }</span>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <span>
+                      {type === "Health"
+                        ? "🏥"
+                        : type === "Life"
+                        ? "❤️"
+                        : type === "Vehicle"
+                        ? "🚗"
+                        : type === "Travel"
+                        ? "✈️"
+                        : type === "Property"
+                        ? "🏠"
+                        : "📋"}
+                    </span>
                     {type}
                   </Box>
                 </MenuItem>
@@ -566,7 +595,15 @@ const ClaimForm = () => {
         {/* --- Date Picker --- */}
         <Grid item xs={12} sm={6}>
           <Box sx={{ mb: 0.5 }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "text.secondary",
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
               <span>📅</span> Date of Incident
             </Typography>
           </Box>
@@ -580,18 +617,18 @@ const ClaimForm = () => {
                 helperText: fieldErrors.date,
                 placeholder: "Select date",
                 sx: {
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'background.paper',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      backgroundColor: 'action.hover',
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "background.paper",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      backgroundColor: "action.hover",
                     },
-                    '&.Mui-focused': {
-                      backgroundColor: 'background.paper',
-                      boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.2)',
+                    "&.Mui-focused": {
+                      backgroundColor: "background.paper",
+                      boxShadow: "0 0 0 2px rgba(25, 118, 210, 0.2)",
                     },
-                                    width: 158,
-                maxWidth: 145,
+                    width: 158,
+                    maxWidth: 145,
                   },
                 },
               },
@@ -602,26 +639,36 @@ const ClaimForm = () => {
 
       {/* --- Signature Canvas --- */}
       <Grid container item justifyContent="center" sx={{ mt: 4 }}>
-        <Grid item xs={12} md={8} lg={7} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Box sx={{ width: '100%', mb: 0.5 }}>
-            <Typography 
-              variant="caption" 
-              sx={{ 
-                color: 'text.secondary', 
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 0.5
+        <Grid
+          item
+          xs={12}
+          md={8}
+          lg={7}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Box sx={{ width: "100%", mb: 0.5 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "text.secondary",
+                display: "flex",
+                flexDirection: "column",
+                gap: 0.5,
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <span>✍️</span>
                 Digital Signature
               </Box>
-              <Typography 
-                variant="caption" 
-                sx={{ 
-                  color: 'text.disabled',
-                  pl: 3
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "text.disabled",
+                  pl: 3,
                 }}
               >
                 Use mouse or touch to sign in the box below
@@ -630,20 +677,22 @@ const ClaimForm = () => {
           </Box>
           <Box
             sx={{
-              width: '100%',
+              width: "100%",
               border: `2px solid ${
-                fieldErrors.signature ? theme.palette.error.main : "rgba(0,0,0,0.23)"
+                fieldErrors.signature
+                  ? theme.palette.error.main
+                  : "rgba(0,0,0,0.23)"
               }`,
               borderRadius: 1,
               p: 1,
               backgroundColor: "background.paper",
-              transition: 'all 0.2s ease',
-              '&:hover': {
-                borderColor: 'rgba(0,0,0,0.87)',
+              transition: "all 0.2s ease",
+              "&:hover": {
+                borderColor: "rgba(0,0,0,0.87)",
               },
-              '&:focus-within': {
+              "&:focus-within": {
                 borderColor: theme.palette.primary.main,
-                boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.2)',
+                boxShadow: "0 0 0 2px rgba(25, 118, 210, 0.2)",
               },
             }}
           >
@@ -663,23 +712,27 @@ const ClaimForm = () => {
               onTouchEnd={stopDrawing}
             />
             {fieldErrors.signature && (
-              <Typography variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
+              <Typography
+                variant="caption"
+                color="error"
+                sx={{ mt: 0.5, display: "block" }}
+              >
                 {fieldErrors.signature}
               </Typography>
             )}
           </Box>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             startIcon={<span>🗑️</span>}
-            sx={{ 
+            sx={{
               mt: 1,
               color: theme.palette.error.main,
               borderColor: theme.palette.error.main,
-              '&:hover': {
-                backgroundColor: theme.palette.error.main + '1A',
+              "&:hover": {
+                backgroundColor: theme.palette.error.main + "1A",
                 borderColor: theme.palette.error.main,
-              }
-            }} 
+              },
+            }}
             onClick={clearSignature}
           >
             Clear Signature
@@ -688,13 +741,15 @@ const ClaimForm = () => {
       </Grid>
 
       {/* --- Submit Button --- */}
-      <Box sx={{ 
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        mt: 6,
-        mb: 2
-      }}>
+      <Box
+        sx={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          mt: 6,
+          mb: 2,
+        }}
+      >
         <Button
           type="submit"
           variant="contained"
@@ -704,20 +759,27 @@ const ClaimForm = () => {
             backgroundColor: theme.palette.primary.main,
             py: 1.75,
             px: 6,
-            fontSize: '1.1rem',
+            fontSize: "1.1rem",
             fontWeight: 500,
-            minWidth: '200px',
-            maxWidth: '300px',
-            '&:hover': {
+            minWidth: "200px",
+            maxWidth: "300px",
+            "&:hover": {
               backgroundColor: theme.palette.primary.dark,
             },
-            '&:disabled': {
+            "&:disabled": {
               backgroundColor: theme.palette.action.disabledBackground,
-            }
+            },
           }}
         >
           {loading ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                justifyContent: "center",
+              }}
+            >
               <span>⏳</span> Submitting...
             </Box>
           ) : (
@@ -778,9 +840,7 @@ const ClaimForm = () => {
 
           {/* --- Form Body --- */}
           <Box component="form" onSubmit={handleSubmit}>
-            {uploadMode === "upload"
-              ? renderUploadForm()
-              : renderManualForm()}
+            {uploadMode === "upload" ? renderUploadForm() : renderManualForm()}
           </Box>
         </Paper>
       </Container>

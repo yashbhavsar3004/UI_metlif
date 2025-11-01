@@ -117,7 +117,7 @@ const HomePage = ({ sidebarOpen = false }) => {
           mx: { xs: 0, sm: sidebarOpen ? 0 : 0 },
         }}
       >
-        <Container 
+        <Container
           maxWidth="lg"
           sx={{
             px: { xs: 2, sm: 3, md: sidebarOpen ? 2 : 4 },
@@ -147,14 +147,16 @@ const HomePage = ({ sidebarOpen = false }) => {
                 }}
               >
                 MetLife is a leading global financial services company providing
-                insurance, annuities, employee benefits, and asset management
-                to help customers achieve their financial goals.
+                insurance, annuities, employee benefits, and asset management to
+                help customers achieve their financial goals.
               </Typography>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <Button
                   variant="contained"
                   size="large"
-                  onClick={() => window.location.href = "https://www.metlife.com/get-started/"}
+                  onClick={() =>
+                    (window.location.href = "https://www.metlife.com/")
+                  }
                   sx={{
                     backgroundColor: "white",
                     color: "#2196F3", // Blue
@@ -171,7 +173,9 @@ const HomePage = ({ sidebarOpen = false }) => {
                 <Button
                   variant="outlined"
                   size="large"
-                  onClick={() => window.location.href = "https://www.metlife.com/about/"}
+                  onClick={() =>
+                    (window.location.href = "https://www.metlife.com/about/")
+                  }
                   sx={{
                     borderColor: "white",
                     color: "white",
@@ -207,7 +211,7 @@ const HomePage = ({ sidebarOpen = false }) => {
         </Container>
       </Box>
 
-      <Container 
+      <Container
         maxWidth="lg"
         sx={{
           px: { xs: 2, sm: 3, md: sidebarOpen ? 2 : 4 },
@@ -267,8 +271,8 @@ const HomePage = ({ sidebarOpen = false }) => {
               </Typography>
               <Typography variant="body1" paragraph sx={{ lineHeight: 1.8 }}>
                 MetLife, Inc. is one of the world's leading financial services
-                companies, providing insurance, annuities, employee benefits, and
-                asset management. We are committed to helping our customers
+                companies, providing insurance, annuities, employee benefits,
+                and asset management. We are committed to helping our customers
                 achieve their financial goals and build brighter futures.
               </Typography>
               <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
@@ -367,14 +371,22 @@ const HomePage = ({ sidebarOpen = false }) => {
                       size="small"
                       onClick={() => {
                         const serviceUrls = {
-                          "Life Insurance": "https://www.metlife.com/life-insurance/",
-                          "Home & Auto Insurance": "https://www.metlife.com/home-insurance/",
-                          "Employee Benefits": "https://www.metlife.com/employee-benefits/",
-                          "Retirement & Investments": "https://www.metlife.com/retirement/",
-                          "Dental & Vision": "https://www.metlife.com/dental-insurance/",
-                          "Disability Insurance": "https://www.metlife.com/disability-insurance/"
+                          "Life Insurance":
+                            "https://www.metlife.com/life-insurance/",
+                          "Home & Auto Insurance":
+                            "https://www.metlife.com/home-insurance/",
+                          "Employee Benefits":
+                            "https://www.metlife.com/employee-benefits/",
+                          "Retirement & Investments":
+                            "https://www.metlife.com/retirement/",
+                          "Dental & Vision":
+                            "https://www.metlife.com/dental-insurance/",
+                          "Disability Insurance":
+                            "https://www.metlife.com/disability-insurance/",
                         };
-                        window.location.href = serviceUrls[service.title] || "https://www.metlife.com/";
+                        window.location.href =
+                          serviceUrls[service.title] ||
+                          "https://www.metlife.com/";
                       }}
                       sx={{ width: "100%" }}
                     >
@@ -424,13 +436,13 @@ const HomePage = ({ sidebarOpen = false }) => {
                     >
                       {value.icon}
                     </Box>
-                  <Typography
-                    variant="h6"
-                    gutterBottom
-                    sx={{ fontWeight: 600, mb: 1 }}
-                  >
-                    {value.title}
-                  </Typography>
+                    <Typography
+                      variant="h6"
+                      gutterBottom
+                      sx={{ fontWeight: 600, mb: 1 }}
+                    >
+                      {value.title}
+                    </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {value.description}
                     </Typography>
@@ -453,64 +465,69 @@ const HomePage = ({ sidebarOpen = false }) => {
             mb: 6,
           }}
         >
-          <Container 
+          <Container
             maxWidth="lg"
             sx={{
               px: { xs: 2, sm: 3, md: sidebarOpen ? 2 : 4 },
             }}
           >
-          <Typography
-            variant="h4"
-            gutterBottom
-            sx={{ fontWeight: 700, mb: 2 }}
-          >
-            Ready to Build Your Brighter Future?
-          </Typography>
-          <Typography variant="h6" sx={{ mb: 4, opacity: 0.95 }}>
-            Get in touch with our team to learn more about how MetLife can help
-            you achieve your financial goals.
-          </Typography>
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2}
-            justifyContent="center"
-          >
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => window.location.href = "https://www.metlife.com/contact-us/"}
-              sx={{
-                backgroundColor: "white",
-                color: "#2196F3", // Blue
-                fontWeight: 600,
-                px: 4,
-                py: 1.5,
-                "&:hover": {
-                  backgroundColor: "#f0f0f0",
-                },
-              }}
+            <Typography
+              variant="h4"
+              gutterBottom
+              sx={{ fontWeight: 700, mb: 2 }}
             >
-              Contact Us
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={() => window.location.href = "https://www.metlife.com/find-an-agent/"}
-              sx={{
-                borderColor: "white",
-                color: "white",
-                fontWeight: 600,
-                px: 4,
-                py: 1.5,
-                "&:hover": {
+              Ready to Build Your Brighter Future?
+            </Typography>
+            <Typography variant="h6" sx={{ mb: 4, opacity: 0.95 }}>
+              Get in touch with our team to learn more about how MetLife can
+              help you achieve your financial goals.
+            </Typography>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              justifyContent="center"
+            >
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() =>
+                  (window.location.href = "https://www.metlife.com/contact-us/")
+                }
+                sx={{
+                  backgroundColor: "white",
+                  color: "#2196F3", // Blue
+                  fontWeight: 600,
+                  px: 4,
+                  py: 1.5,
+                  "&:hover": {
+                    backgroundColor: "#f0f0f0",
+                  },
+                }}
+              >
+                Contact Us
+              </Button>
+              <Button
+                variant="outlined"
+                size="large"
+                onClick={() =>
+                  (window.location.href =
+                    "https://www.metlife.com/find-an-agent/")
+                }
+                sx={{
                   borderColor: "white",
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                },
-              }}
-            >
-              Find an Agent
-            </Button>
-          </Stack>
+                  color: "white",
+                  fontWeight: 600,
+                  px: 4,
+                  py: 1.5,
+                  "&:hover": {
+                    borderColor: "white",
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  },
+                }}
+              >
+                Find an Agent
+              </Button>
+            </Stack>
           </Container>
         </Box>
 
@@ -551,4 +568,3 @@ const HomePage = ({ sidebarOpen = false }) => {
 };
 
 export default HomePage;
-
