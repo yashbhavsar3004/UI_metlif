@@ -271,13 +271,13 @@ const AdminDashboard = () => {
           </Grid>
 
           {/* Charts */}
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2, borderRadius: 3, height: 320 }}>
+          <Grid container spacing={3} sx={{ mx: -3 }}>
+            <Grid item xs={12} md={8}>
+              <Paper sx={{ p: 3, borderRadius: 3, height: 420, ml: '100px' }}>
                 <Typography variant="h6" gutterBottom>
                   Claims by Type
                 </Typography>
-                <ResponsiveContainer width="100%" height="85%">
+                <ResponsiveContainer width="100%" height="90%">
                   <BarChart data={typeData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
@@ -289,12 +289,12 @@ const AdminDashboard = () => {
               </Paper>
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2, borderRadius: 3, height: 320 }}>
+            <Grid item xs={12} md={8}>
+              <Paper sx={{ p: 3, borderRadius: 3, height: 420, ml: '100px' }}>
                 <Typography variant="h6" gutterBottom>
                   Claims Over Time
                 </Typography>
-                <ResponsiveContainer width="100%" height="85%">
+                <ResponsiveContainer width="100%" height="90%">
                   <LineChart data={amountOverTime}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
