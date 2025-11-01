@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Box } from '@mui/material'
 import { SidebarProvider, useSidebar } from './contexts/SidebarContext'
-import Navbar, { drawerWidth } from './pages/Navbar'
+import Navbar, { drawerWidth } from './components/Navbar'
 import HomePage from './pages/HomePage'
 import './App.css'
+import ClaimForm from './pages/ClaimForm'
+import AdminDashboard from './pages/AdminDashboard'
 
 const MainContent = () => {
   const { sidebarOpen } = useSidebar();
@@ -26,6 +28,9 @@ const MainContent = () => {
     >
       <Routes>
         <Route path="/" element={<HomePage sidebarOpen={sidebarOpen} />} />
+        <Route path="/claim-submition" element={<ClaimForm />} />
+        <Route path="/claims-submission" element={<ClaimForm />} />
+        <Route path="/agent-dashboard" element={<AdminDashboard />} />
       </Routes>
     </Box>
   );

@@ -23,8 +23,10 @@ import {
   Search as SearchIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
+  Description as DescriptionIcon,
+  Dashboard as DashboardIcon,
 } from "@mui/icons-material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSidebar } from "../contexts/SidebarContext";
 
 export const drawerWidth = 280;
@@ -33,6 +35,7 @@ const Navbar = () => {
   const { sidebarOpen, toggleSidebar } = useSidebar();
   const [expandedItems, setExpandedItems] = useState({});
   const [imageError, setImageError] = useState({});
+  const navigate = useNavigate();
 
   const handleImageError = (location) => {
     setImageError((prev) => ({ ...prev, [location]: true }));
@@ -114,13 +117,73 @@ const Navbar = () => {
 
       {/* Navigation Items - Removed */}
 
+      {/* New Sidebar Navigation Buttons */}
+      <Box sx={{ pt: sidebarOpen ? 1 : 0 }}>
+        <List>
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => {
+                navigate('/claim-submition');
+                // close sidebar on small screens
+                if (sidebarOpen) toggleSidebar();
+              }}
+              sx={{
+                py: 1.5,
+                px: 2,
+                "&:hover": {
+                  backgroundColor: "rgba(0, 0, 0, 0.04)",
+                },
+              }}
+            >
+              <ListItemIcon>
+                <DescriptionIcon />
+              </ListItemIcon>
+              <ListItemText
+                primary="CLAIMS SUBMISSION"
+                primaryTypographyProps={{
+                  fontSize: "0.8125rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.6px",
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => {
+                navigate('/agent-dashboard');
+                if (sidebarOpen) toggleSidebar();
+              }}
+              sx={{
+                py: 1.5,
+                px: 2,
+                "&:hover": {
+                  backgroundColor: "rgba(0, 0, 0, 0.04)",
+                },
+              }}
+            >
+              <ListItemIcon>
+                <DashboardIcon />
+              </ListItemIcon>
+              <ListItemText
+                primary="AGENT DASHBOARD"
+                primaryTypographyProps={{
+                  fontSize: "0.8125rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.6px",
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        </List>
+        <Divider />
+      </Box>
+
       {/* Utilities Section */}
       <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "flex-start", pt: sidebarOpen ? 2 : 0 }}>
         <List>
           <ListItem disablePadding>
             <ListItemButton
-              component={Link}
-              to="#"
               sx={{
                 py: 1.5,
                 px: 2,
@@ -239,8 +302,6 @@ const Navbar = () => {
           <Box sx={{ flexGrow: 1 }} />
           <Stack direction="row" spacing={1} sx={{ display: { xs: "none", sm: "flex" } }}>
             <Button
-              component={Link}
-              to="#"
               startIcon={<PersonIcon />}
               sx={{
                 color: "inherit",
