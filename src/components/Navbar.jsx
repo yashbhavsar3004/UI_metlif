@@ -25,6 +25,7 @@ import {
   ExpandLess as ExpandLessIcon,
   Description as DescriptionIcon,
   Dashboard as DashboardIcon,
+  Policy as PolicyIcon,
 } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
 import { useSidebar } from "../contexts/SidebarContext";
@@ -157,6 +158,33 @@ const Navbar = () => {
           <ListItem disablePadding>
             <ListItemButton
               onClick={() => {
+                navigate("/my-policies");
+                if (sidebarOpen) toggleSidebar();
+              }}
+              sx={{
+                py: 1.5,
+                px: 2,
+                "&:hover": {
+                  backgroundColor: "rgba(0, 0, 0, 0.04)",
+                },
+              }}
+            >
+              <ListItemIcon>
+                <PolicyIcon />
+              </ListItemIcon>
+              <ListItemText
+                primary="MY POLICIES"
+                primaryTypographyProps={{
+                  fontSize: "0.8125rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.6px",
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => {
                 navigate("/agent-dashboard");
                 if (sidebarOpen) toggleSidebar();
               }}
@@ -211,29 +239,6 @@ const Navbar = () => {
               </ListItemIcon>
               <ListItemText
                 primary="LOG IN"
-                primaryTypographyProps={{
-                  fontSize: "0.8125rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.6px",
-                }}
-              />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton
-              sx={{
-                py: 1.5,
-                px: 2,
-                "&:hover": {
-                  backgroundColor: "rgba(0, 0, 0, 0.04)",
-                },
-              }}
-            >
-              <ListItemIcon>
-                <SearchIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary="SEARCH"
                 primaryTypographyProps={{
                   fontSize: "0.8125rem",
                   textTransform: "uppercase",
@@ -334,17 +339,6 @@ const Navbar = () => {
             >
               LOG IN
             </Button>
-            <IconButton
-              color="inherit"
-              aria-label="search"
-              sx={{
-                "&:hover": {
-                  backgroundColor: "rgba(0, 0, 0, 0.04)",
-                },
-              }}
-            >
-              <SearchIcon />
-            </IconButton>
           </Stack>
         </Toolbar>
       </AppBar>

@@ -6,6 +6,7 @@ import HomePage from "./pages/HomePage";
 import "./App.css";
 import ClaimForm from "./pages/ClaimForm";
 import AdminDashboard from "./pages/AdminDashboard";
+import MyPolicies from "./pages/MyPolicies";
 
 const MainContent = () => {
   const { sidebarOpen } = useSidebar();
@@ -31,6 +32,7 @@ const MainContent = () => {
         <Route path="/claim-submition" element={<ClaimForm />} />
         <Route path="/claims-submission" element={<ClaimForm />} />
         <Route path="/agent-dashboard" element={<AdminDashboard />} />
+        <Route path="/my-policies" element={<MyPolicies />} />
       </Routes>
     </Box>
   );
