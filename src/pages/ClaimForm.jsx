@@ -17,12 +17,15 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { UploadFile as UploadFileIcon, Description as DescriptionIcon } from "@mui/icons-material";
+import {
+  UploadFile as UploadFileIcon,
+  Description as DescriptionIcon,
+} from "@mui/icons-material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { claimFormAPI } from "../services/api";
 import { format } from "date-fns";
+import { claimFormAPI } from "../services/api"; // <-- your API service
 
 const ClaimForm = () => {
   const [formData, setFormData] = useState({
@@ -37,164 +40,183 @@ const ClaimForm = () => {
     signature: null,
   });
 
-  const canvasRef = useRef(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [uploadMode, setUploadMode] = useState("manual"); // "manual" or "upload"
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [uploadMode, setUploadMode] = useState("manual");
   const [pdfFile, setPdfFile] = useState(null);
   const fileInputRef = useRef(null);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [loading, setLoading] = useState(false);
+  const canvasRef = useRef(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const claimTypes = [
-    "Health Insurance",
-    "Life Insurance",
-    "Vehicle Insurance",
-    "Travel Insurance",
-    "Property Insurance",
-    "Other",
-  ];
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // Initialize canvas context and handle resize
+  // Set up signature canvas
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext("2d");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const setCanvasSize = () => {
+      const container = canvas.parentElement;
+      const width = Math.min(600, container.offsetWidth - 16);
+      canvas.width = width;
+      canvas.height = 150;
       ctx.strokeStyle = "#000";
       ctx.lineWidth = 2;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
-      
-      // Set canvas size based on container
-      const setCanvasSize = () => {
-        const container = canvas.parentElement;
-        if (container) {
-          const maxWidth = Math.min(600, container.offsetWidth - 16);
-          canvas.width = maxWidth;
-          canvas.height = Math.max(150, maxWidth * 0.33);
-          
-          // Reinitialize context after resize
-          ctx.strokeStyle = "#000";
-          ctx.lineWidth = 2;
-          ctx.lineCap = "round";
-          ctx.lineJoin = "round";
-        }
-      };
-      
-      setCanvasSize();
-      window.addEventListener("resize", setCanvasSize);
-      
-      return () => {
-        window.removeEventListener("resize", setCanvasSize);
-      };
-    }
+    };
+    setCanvasSize();
+    window.addEventListener("resize", setCanvasSize);
+    return () => window.removeEventListener("resize", setCanvasSize);
   }, []);
 
-  const handleInputChange = (field) => (event) => {
-    setFormData({
-      ...formData,
-      [field]: event.target.value,
-    });
+  // Field validation logic
+  const validateField = (field, value) => {
+    let error = "";
+    switch (field) {
+      case "claimNo":
+        if (!value.trim()) error = "Claim No is required";
+        else if (value.length < 3)
+          error = "Claim No must be at least 3 characters";
+        break;
+      case "customerId":
+        if (!value.trim()) error = "Customer ID is required";
+        else if (value.length < 3)
+          error = "Customer ID must be at least 3 characters";
+        break;
+      case "claimType":
+        if (!value) error = "Claim Type is required";
+        break;
+      case "amount":
+        if (!value.trim()) error = "Amount is required";
+        else if (isNaN(value)) error = "Amount must be a number";
+        else if (parseFloat(value) <= 0)
+          error = "Amount must be greater than 0";
+        break;
+      case "nominee":
+        if (!value.trim()) error = "Nominee is required";
+        else if (!/^[a-zA-Z\s]+$/.test(value))
+          error = "Nominee should contain only letters";
+        break;
+      case "date":
+        if (!value) error = "Date is required";
+        else if (new Date(value) > new Date())
+          error = "Date cannot be in the future";
+        break;
+      case "bankAccountNo":
+        if (!value.trim()) error = "Bank Account Number is required";
+        else if (!/^\d+$/.test(value))
+          error = "Bank Account should contain only digits";
+        else if (value.length < 8)
+          error = "Bank Account must be at least 8 digits";
+        break;
+      case "nameOfClaimant":
+        if (!value.trim()) error = "Name of Claimant is required";
+        else if (!/^[a-zA-Z\s]+$/.test(value))
+          error = "Name should contain only letters";
+        break;
+      case "signature":
+        if (!value) error = "Signature is required";
+        break;
+      default:
+        break;
+    }
+    return error;
+  };
+
+  // Validate all fields
+  const validateAllFields = () => {
+    const fields = Object.keys(formData);
+    const newErrors = {};
+    fields.forEach((f) => (newErrors[f] = validateField(f, formData[f])));
+    setFieldErrors(newErrors);
+    return !Object.values(newErrors).some((e) => e);
+  };
+
+  // Handle text inputs
+  const handleInputChange = (field) => (e) => {
+    const value = e.target.value;
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        [field]: validateField(field, value),
+      }));
+    }
   };
 
   const handleDateChange = (newDate) => {
-    setFormData({
-      ...formData,
-      date: newDate,
-    });
-  };
-
-  const useTodayDate = () => {
-    setFormData({
-      ...formData,
-      date: new Date(),
-    });
-  };
-
-  // Get coordinates from event (supports both mouse and touch)
-  const getCoordinates = (e) => {
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    
-    if (e.touches && e.touches.length > 0) {
-      return {
-        x: (e.touches[0].clientX - rect.left) * scaleX,
-        y: (e.touches[0].clientY - rect.top) * scaleY,
-      };
+    setFormData((prev) => ({ ...prev, date: newDate }));
+    if (fieldErrors.date) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        date: validateField("date", newDate),
+      }));
     }
-    return {
-      x: (e.clientX - rect.left) * scaleX,
-      y: (e.clientY - rect.top) * scaleY,
-    };
-  };
-
-  // Signature Canvas Handlers
-  const startDrawing = (e) => {
-    e.preventDefault();
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const coords = getCoordinates(e);
-    
-    ctx.beginPath();
-    ctx.moveTo(coords.x, coords.y);
-    setIsDrawing(true);
-  };
-
-  const draw = (e) => {
-    if (!isDrawing) return;
-    e.preventDefault();
-    
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const coords = getCoordinates(e);
-    
-    ctx.lineTo(coords.x, coords.y);
-    ctx.stroke();
-  };
-
-  const stopDrawing = (e) => {
-    if (e) e.preventDefault();
-    if (isDrawing) {
-      const canvas = canvasRef.current;
-      const dataURL = canvas.toDataURL();
-      setFormData({
-        ...formData,
-        signature: dataURL,
-      });
-    }
-    setIsDrawing(false);
   };
 
   const clearSignature = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    setFormData({
-      ...formData,
-      signature: null,
-    });
+    setFormData((prev) => ({ ...prev, signature: null }));
+    setFieldErrors((prev) => ({ ...prev, signature: "Signature is required" }));
   };
 
+  // Canvas drawing handlers
+  const getCoordinates = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
+    };
+  };
+
+  const startDrawing = (e) => {
+    e.preventDefault();
+    const ctx = canvasRef.current.getContext("2d");
+    const { x, y } = getCoordinates(e);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    setIsDrawing(true);
+  };
+
+  const draw = (e) => {
+    if (!isDrawing) return;
+    e.preventDefault();
+    const ctx = canvasRef.current.getContext("2d");
+    const { x, y } = getCoordinates(e);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  };
+
+  const stopDrawing = (e) => {
+    if (!isDrawing) return;
+    e.preventDefault();
+    const canvas = canvasRef.current;
+    const data = canvas.toDataURL();
+    setFormData((prev) => ({ ...prev, signature: data }));
+    setFieldErrors((prev) => ({ ...prev, signature: "" }));
+    setIsDrawing(false);
+  };
+
+  // PDF Upload Handlers
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (file.type === "application/pdf") {
-        setPdfFile(file);
-      } else {
-        alert("Please upload a PDF file only.");
-        e.target.value = "";
-      }
-    }
-  };
-
-  const handleRemoveFile = () => {
-    setPdfFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    if (file && file.type === "application/pdf") {
+      setPdfFile(file);
+    } else {
+      alert("Please upload a PDF file only.");
+      e.target.value = "";
     }
   };
 
@@ -204,649 +226,256 @@ const ClaimForm = () => {
     setSuccess(false);
     setLoading(true);
 
-    try {
-      if (uploadMode === "upload") {
-        // PDF Upload Mode
-        if (!pdfFile) {
-          setError("Please upload a PDF file.");
-          setLoading(false);
-          return;
-        }
-
-        // Prepare payload for PDF upload
-        const payload = {
-          file: pdfFile,
-          fileName: pdfFile.name,
-          fileSize: pdfFile.size,
-          fileType: pdfFile.type,
-          uploadedAt: new Date().toISOString(),
-        };
-
-        // Log payload to console
-        console.log("📤 PDF Upload Payload:", payload);
-        console.log("📄 File Details:", {
-          name: pdfFile.name,
-          size: `${(pdfFile.size / 1024).toFixed(2)} KB`,
-          type: pdfFile.type,
-          lastModified: new Date(pdfFile.lastModified).toISOString(),
-        });
-
-        // Submit PDF via API
-        const response = await claimFormAPI.uploadPDFForm(pdfFile);
-        
-        console.log("✅ PDF Upload Response:", response);
-        
-        // Save to localStorage for admin dashboard
-        const pdfSubmission = {
-          fileName: pdfFile.name,
-          fileSize: pdfFile.size,
-          fileType: pdfFile.type,
-          uploadedAt: new Date().toISOString(),
-          status: "pending",
-        };
-        const existingPDFs = JSON.parse(localStorage.getItem("submittedPDFs") || "[]");
-        existingPDFs.push(pdfSubmission);
-        localStorage.setItem("submittedPDFs", JSON.stringify(existingPDFs));
-        
-        setSuccess(true);
-        
-        // Reset form after successful submission
-        setTimeout(() => {
-          setPdfFile(null);
-          if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-          }
-          setSuccess(false);
-        }, 3000);
-
-      } else {
-        // Manual Form Mode
-        // Validate required fields
-        if (!formData.claimNo || !formData.customerId || !formData.claimType || 
-            !formData.amount || !formData.nominee || !formData.date || 
-            !formData.bankAccountNo || !formData.nameOfClaimant || !formData.signature) {
-          setError("Please fill in all required fields including signature.");
-          setLoading(false);
-          return;
-        }
-
-        // Prepare payload for manual form submission
-        const payload = {
-          claimNo: formData.claimNo,
-          customerId: formData.customerId,
-          claimType: formData.claimType,
-          amount: parseFloat(formData.amount),
-          nominee: formData.nominee,
-          date: formData.date ? format(formData.date, "yyyy-MM-dd") : null,
-          bankAccountNo: formData.bankAccountNo,
-          nameOfClaimant: formData.nameOfClaimant,
-          signature: formData.signature,
-          submittedAt: new Date().toISOString(),
-        };
-
-        // Log payload to console
-        console.log("📤 Manual Form Payload:", payload);
-        console.log("📋 Form Data Details:", {
-          ...payload,
-          signatureBase64: formData.signature ? "Signature present (Base64 encoded)" : "No signature",
-        });
-
-        // Submit form via API
-        const response = await claimFormAPI.submitClaimForm(payload);
-        
-        console.log("✅ Form Submission Response:", response);
-        
-        // Save to localStorage for admin dashboard
-        const existingClaims = JSON.parse(localStorage.getItem("submittedClaims") || "[]");
-        existingClaims.push({
-          ...payload,
-          status: "pending",
-        });
-        localStorage.setItem("submittedClaims", JSON.stringify(existingClaims));
-        
-        setSuccess(true);
-
-        // Reset form after successful submission
-        setTimeout(() => {
-          setFormData({
-            claimNo: "",
-            customerId: "",
-            claimType: "",
-            amount: "",
-            nominee: "",
-            date: null,
-            bankAccountNo: "",
-            nameOfClaimant: "",
-            signature: null,
-          });
-          clearSignature();
-          setSuccess(false);
-        }, 3000);
+    if (uploadMode === "upload") {
+      if (!pdfFile) {
+        setError("Please upload a PDF file.");
+        setLoading(false);
+        return;
       }
+
+      try {
+        await claimFormAPI.uploadPDFForm(pdfFile);
+        setSuccess(true);
+      } catch (err) {
+        setError("PDF upload failed.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Manual form mode
+    const isValid = validateAllFields();
+    if (!isValid) {
+      setError("Please fix validation errors before submitting.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const payload = {
+        ...formData,
+        amount: parseFloat(formData.amount),
+        date: format(formData.date, "yyyy-MM-dd"),
+        submittedAt: new Date().toISOString(),
+      };
+
+      console.log("Submitting payload:", payload);
+      await claimFormAPI.submitClaimForm(payload);
+
+      setSuccess(true);
+
+      // Reset form
+      setFormData({
+        claimNo: "",
+        customerId: "",
+        claimType: "",
+        amount: "",
+        nominee: "",
+        date: null,
+        bankAccountNo: "",
+        nameOfClaimant: "",
+        signature: null,
+      });
+      setFieldErrors({});
+      clearSignature();
     } catch (err) {
-      console.error("❌ API Error:", err);
-      setError(
-        err.response?.data?.message || 
-        err.message || 
-        "Failed to submit form. Please try again."
-      );
+      console.error("API Error:", err);
+      setError("Submission failed. Try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTabChange = (event, newValue) => {
-    setUploadMode(newValue);
-    setPdfFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container 
-        maxWidth="md" 
-        sx={{ 
-          py: { xs: 2, sm: 3, md: 4 },
-          px: { xs: 1, sm: 2 },
-        }}
-      >
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            p: { xs: 2, sm: 3, md: 4 },
-            borderRadius: { xs: 1, sm: 2 },
-          }}
-        >
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Paper sx={{ p: 4 }}>
           <Typography
             variant="h4"
-            component="h1"
-            gutterBottom
-            sx={{ 
-              mb: { xs: 2, sm: 3 },
-              color: "#0066cc",
-              fontWeight: 600,
-              fontSize: { xs: "1.75rem", sm: "2rem", md: "2.5rem" },
-              textAlign: { xs: "center", sm: "left" },
-            }}
+            sx={{ mb: 3, fontWeight: 600, color: "#0066cc" }}
           >
             Claim Form
           </Typography>
 
-          {/* Error Alert */}
-          {error && (
-            <Alert 
-              severity="error" 
-              onClose={() => setError(null)}
-              sx={{ mb: { xs: 2, sm: 3 } }}
-            >
-              {error}
-            </Alert>
-          )}
-
-          {/* Success Alert */}
+          {error && <Alert severity="error">{error}</Alert>}
           {success && (
-            <Alert 
-              severity="success" 
-              onClose={() => setSuccess(false)}
-              sx={{ mb: { xs: 2, sm: 3 } }}
-            >
-              {uploadMode === "upload" 
-                ? "PDF form uploaded successfully!" 
-                : "Claim form submitted successfully!"}
-            </Alert>
+            <Alert severity="success">Form submitted successfully!</Alert>
           )}
 
-          {/* Mode Selection Tabs */}
-          <Box 
-            sx={{ 
-              borderBottom: 1, 
-              borderColor: "divider", 
-              mb: { xs: 2, sm: 3 },
-              overflowX: "auto",
-            }}
-          >
-            <Tabs
-              value={uploadMode}
-              onChange={handleTabChange}
-              variant="scrollable"
-              scrollButtons="auto"
-              sx={{
-                "& .MuiTab-root": {
-                  textTransform: "none",
-                  fontSize: { xs: "0.875rem", sm: "1rem" },
-                  minWidth: { xs: 120, sm: 160 },
-                  px: { xs: 1, sm: 2 },
-                },
-              }}
-            >
-              <Tab 
-                label="Fill Form Manually" 
-                value="manual" 
-                icon={<DescriptionIcon />} 
-                iconPosition="start"
-                sx={{ flexDirection: { xs: "column", sm: "row" }, gap: { xs: 0.5, sm: 1 } }}
+          <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
+            <Tabs value={uploadMode} onChange={(e, v) => setUploadMode(v)}>
+              <Tab
+                icon={<DescriptionIcon />}
+                label="Fill Form Manually"
+                value="manual"
               />
-              <Tab 
-                label="Upload PDF Form" 
-                value="upload" 
-                icon={<UploadFileIcon />} 
-                iconPosition="start"
-                sx={{ flexDirection: { xs: "column", sm: "row" }, gap: { xs: 0.5, sm: 1 } }}
+              <Tab
+                icon={<UploadFileIcon />}
+                label="Upload PDF Form"
+                value="upload"
               />
             </Tabs>
           </Box>
 
           <Box component="form" onSubmit={handleSubmit}>
             {uploadMode === "upload" ? (
-              // PDF Upload Section
-              <Grid container spacing={{ xs: 2, sm: 3 }}>
-                <Grid item xs={12}>
-                  <Alert 
-                    severity="info" 
-                    sx={{ 
-                      mb: { xs: 2, sm: 3 },
-                      fontSize: { xs: "0.875rem", sm: "1rem" },
-                    }}
-                  >
-                    Please upload a PDF file containing your claim form with the following fields: Claim No, Customer ID, Claim Type, Amount, Nominee, Date, Bank Account No, and Name of Claimant.
-                  </Alert>
-                </Grid>
-                <Grid item xs={12}>
-                  <Box
-                    sx={{
-                      border: "2px dashed #ccc",
-                      borderRadius: { xs: 1, sm: 2 },
-                      p: { xs: 2, sm: 3, md: 4 },
-                      textAlign: "center",
-                      backgroundColor: "#fafafa",
-                      transition: "all 0.3s ease",
-                      "&:hover": {
-                        borderColor: "#0066cc",
-                        backgroundColor: "#f5f8ff",
-                      },
-                    }}
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="application/pdf"
-                      onChange={handleFileChange}
-                      style={{ display: "none" }}
-                      id="pdf-upload-input"
-                    />
-                    <label htmlFor="pdf-upload-input">
-                      <Button
-                        variant="outlined"
-                        component="span"
-                        startIcon={<UploadFileIcon />}
-                        fullWidth={false}
-                        sx={{
-                          mb: { xs: 1.5, sm: 2 },
-                          py: { xs: 1, sm: 1.5 },
-                          px: { xs: 2, sm: 3 },
-                          fontSize: { xs: "0.875rem", sm: "1rem" },
-                        }}
-                      >
-                        {pdfFile ? "Change PDF File" : "Choose PDF File"}
-                      </Button>
-                    </label>
-                    {pdfFile && (
-                      <Box sx={{ mt: { xs: 1.5, sm: 2 } }}>
-                        <Typography 
-                          variant="body1" 
-                          color="text.secondary"
-                          sx={{
-                            fontSize: { xs: "0.875rem", sm: "1rem" },
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          Selected file: <strong>{pdfFile.name}</strong>
-                        </Typography>
-                        <Typography 
-                          variant="caption" 
-                          color="text.secondary" 
-                          sx={{ 
-                            display: "block", 
-                            mt: 1,
-                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                          }}
-                        >
-                          File size: {(pdfFile.size / 1024).toFixed(2)} KB
-                        </Typography>
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          size="small"
-                          onClick={handleRemoveFile}
-                          sx={{ 
-                            mt: { xs: 1.5, sm: 2 },
-                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                          }}
-                        >
-                          Remove File
-                        </Button>
-                      </Box>
-                    )}
-                    {!pdfFile && (
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary" 
-                        sx={{ 
-                          mt: { xs: 1.5, sm: 2 },
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                        }}
-                      >
-                        Click the button above to select a PDF file
-                      </Typography>
-                    )}
-                  </Box>
-                </Grid>
-                <Grid item xs={12}>
-                  <Box 
-                    sx={{ 
-                      display: "flex", 
-                      justifyContent: { xs: "center", sm: "flex-end" }, 
-                      gap: { xs: 1.5, sm: 2 }, 
-                      mt: { xs: 1, sm: 2 },
-                      flexDirection: { xs: "column-reverse", sm: "row" },
-                    }}
-                  >
-                    <Button 
-                      variant="outlined" 
-                      onClick={handleRemoveFile}
-                      fullWidth={isMobile}
-                      sx={{
-                        fontSize: { xs: "0.875rem", sm: "1rem" },
-                      }}
-                    >
-                      Clear
-                    </Button>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      disabled={!pdfFile || loading}
-                      fullWidth={isMobile}
-                      sx={{
-                        backgroundColor: "#0066cc",
-                        "&:hover": {
-                          backgroundColor: "#0052a3",
-                        },
-                        "&:disabled": {
-                          backgroundColor: "#cccccc",
-                        },
-                        fontSize: { xs: "0.875rem", sm: "1rem" },
-                      }}
-                    >
-                      {loading ? "Submitting..." : "Submit PDF"}
-                    </Button>
-                  </Box>
-                </Grid>
-              </Grid>
-            ) : (
-              // Manual Form Section
-              <Grid container spacing={{ xs: 2, sm: 3 }}>
-              {/* Claim No */}
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Claim No"
-                  required
-                  value={formData.claimNo}
-                  onChange={handleInputChange("claimNo")}
-                  variant="outlined"
+              <>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/pdf"
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
+                  id="pdf-upload"
                 />
-              </Grid>
-
-              {/* Customer ID */}
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Customer ID"
-                  required
-                  value={formData.customerId}
-                  onChange={handleInputChange("customerId")}
-                  variant="outlined"
-                />
-              </Grid>
-
-              {/* Claim Type */}
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Claim Type</InputLabel>
-                  <Select
-                    value={formData.claimType}
-                    onChange={handleInputChange("claimType")}
-                    label="Claim Type"
-                  >
-                    {claimTypes.map((type) => (
-                      <MenuItem key={type} value={type}>
-                        {type}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              {/* Amount */}
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Amount"
-                  type="number"
-                  required
-                  value={formData.amount}
-                  onChange={handleInputChange("amount")}
-                  variant="outlined"
-                  inputProps={{ min: 0, step: "0.01" }}
-                />
-              </Grid>
-
-              {/* Nominee */}
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Nominee"
-                  required
-                  value={formData.nominee}
-                  onChange={handleInputChange("nominee")}
-                  variant="outlined"
-                />
-              </Grid>
-
-              {/* Date */}
-              <Grid item xs={12} md={6}>
-                <Box 
-                  sx={{ 
-                    display: "flex", 
-                    gap: { xs: 1, sm: 1.5 }, 
-                    alignItems: "flex-start",
-                    flexDirection: { xs: "column", sm: "row" },
-                  }}
-                >
-                  <Box sx={{ flex: 1, width: "100%" }}>
-                    <DatePicker
-                      label="Date"
-                      value={formData.date}
-                      onChange={handleDateChange}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          required: true,
-                          size: "medium",
-                        },
-                      }}
-                    />
-                  </Box>
+                <label htmlFor="pdf-upload">
                   <Button
                     variant="outlined"
-                    onClick={useTodayDate}
-                    sx={{ 
-                      mt: { xs: 1, sm: 0.5 },
-                      whiteSpace: "nowrap",
-                      width: { xs: "100%", sm: "auto" },
-                      fontSize: { xs: "0.875rem", sm: "1rem" },
-                    }}
+                    component="span"
+                    startIcon={<UploadFileIcon />}
                   >
-                    Use Today
+                    {pdfFile ? "Change PDF" : "Upload PDF"}
+                  </Button>
+                </label>
+                {pdfFile && (
+                  <Typography sx={{ mt: 2 }}>{pdfFile.name}</Typography>
+                )}
+                <Box sx={{ mt: 3 }}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={!pdfFile || loading}
+                  >
+                    {loading ? "Submitting..." : "Submit PDF"}
                   </Button>
                 </Box>
-              </Grid>
+              </>
+            ) : (
+              <Grid container spacing={2}>
+                {/* --- Input Fields --- */}
+                {[
+                  { label: "Claim No", name: "claimNo" },
+                  { label: "Customer ID", name: "customerId" },
+                  { label: "Amount", name: "amount", type: "number" },
+                  { label: "Nominee", name: "nominee" },
+                  { label: "Bank Account No", name: "bankAccountNo" },
+                  { label: "Name of Claimant", name: "nameOfClaimant" },
+                ].map((f) => (
+                  <Grid item xs={12} sm={6} key={f.name}>
+                    <TextField
+                      fullWidth
+                      label={f.label}
+                      name={f.name}
+                      value={formData[f.name]}
+                      onChange={handleInputChange(f.name)}
+                      error={!!fieldErrors[f.name]}
+                      helperText={fieldErrors[f.name]}
+                      type={f.type || "text"}
+                    />
+                  </Grid>
+                ))}
 
-              {/* Bank Account No */}
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Bank Account No"
-                  required
-                  value={formData.bankAccountNo}
-                  onChange={handleInputChange("bankAccountNo")}
-                  variant="outlined"
-                  inputProps={{ pattern: "[0-9]*" }}
-                />
-              </Grid>
+                {/* Claim Type */}
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth error={!!fieldErrors.claimType}>
+                    <InputLabel>Claim Type</InputLabel>
+                    <Select
+                      value={formData.claimType}
+                      onChange={(e) => handleInputChange("claimType")(e)}
+                    >
+                      {[
+                        "Health",
+                        "Life",
+                        "Vehicle",
+                        "Travel",
+                        "Property",
+                        "Other",
+                      ].map((t) => (
+                        <MenuItem key={t} value={t}>
+                          {t}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {fieldErrors.claimType && (
+                      <Typography variant="caption" color="error">
+                        {fieldErrors.claimType}
+                      </Typography>
+                    )}
+                  </FormControl>
+                </Grid>
 
-              {/* Name of Claimant */}
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Name of Claimant"
-                  required
-                  value={formData.nameOfClaimant}
-                  onChange={handleInputChange("nameOfClaimant")}
-                  variant="outlined"
-                />
-              </Grid>
-
-              {/* Signature */}
-              <Grid item xs={12}>
-                <Typography 
-                  variant="subtitle1" 
-                  gutterBottom 
-                  sx={{ 
-                    mb: { xs: 1, sm: 1.5 },
-                    fontSize: { xs: "1rem", sm: "1.125rem" },
-                    fontWeight: 500,
-                  }}
-                >
-                  Signature <span style={{ color: "red" }}>*</span>
-                </Typography>
-                <Box
-                  sx={{
-                    border: "2px solid #ccc",
-                    borderRadius: { xs: 1, sm: 2 },
-                    p: { xs: 0.5, sm: 1 },
-                    backgroundColor: "#fff",
-                    overflow: "hidden",
-                  }}
-                >
-                  <canvas
-                    ref={canvasRef}
-                    style={{
-                      border: "1px solid #ddd",
-                      cursor: "crosshair",
-                      display: "block",
-                      width: "100%",
-                      maxWidth: "100%",
-                      height: "auto",
-                      touchAction: "none",
+                {/* Date */}
+                <Grid item xs={12} sm={6}>
+                  <DatePicker
+                    label="Date"
+                    value={formData.date}
+                    onChange={handleDateChange}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        error: !!fieldErrors.date,
+                        helperText: fieldErrors.date,
+                      },
                     }}
-                    onMouseDown={startDrawing}
-                    onMouseMove={draw}
-                    onMouseUp={stopDrawing}
-                    onMouseLeave={stopDrawing}
-                    onTouchStart={startDrawing}
-                    onTouchMove={draw}
-                    onTouchEnd={stopDrawing}
                   />
-                </Box>
-                <Box 
-                  sx={{ 
-                    mt: { xs: 1, sm: 1.5 },
-                    display: "flex",
-                    flexDirection: { xs: "column", sm: "row" },
-                    alignItems: { xs: "flex-start", sm: "center" },
-                    gap: { xs: 1, sm: 2 },
-                  }}
-                >
+                </Grid>
+
+                {/* Signature */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                    Signature <span style={{ color: "red" }}>*</span>
+                  </Typography>
+                  {fieldErrors.signature && (
+                    <Typography variant="caption" color="error">
+                      {fieldErrors.signature}
+                    </Typography>
+                  )}
+                  <Box
+                    sx={{
+                      border: "2px solid #ccc",
+                      borderRadius: 1,
+                      p: 1,
+                      backgroundColor: "#fafafa",
+                    }}
+                  >
+                    <canvas
+                      ref={canvasRef}
+                      style={{
+                        width: "100%",
+                        height: 150,
+                        cursor: "crosshair",
+                      }}
+                      onMouseDown={startDrawing}
+                      onMouseMove={draw}
+                      onMouseUp={stopDrawing}
+                      onMouseLeave={stopDrawing}
+                      onTouchStart={startDrawing}
+                      onTouchMove={draw}
+                      onTouchEnd={stopDrawing}
+                    />
+                  </Box>
                   <Button
                     variant="outlined"
-                    size="small"
+                    sx={{ mt: 1 }}
                     onClick={clearSignature}
-                    sx={{ 
-                      fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                    }}
                   >
                     Clear Signature
                   </Button>
-                  <Typography 
-                    variant="caption" 
-                    color="text.secondary"
-                    sx={{
-                      fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                    }}
-                  >
-                    Please sign above using your mouse, touchpad, or touchscreen
-                  </Typography>
-                </Box>
-              </Grid>
+                </Grid>
 
-              {/* Submit Button */}
-              <Grid item xs={12}>
-                <Box 
-                  sx={{ 
-                    display: "flex", 
-                    justifyContent: { xs: "center", sm: "flex-end" }, 
-                    gap: { xs: 1.5, sm: 2 }, 
-                    mt: { xs: 1, sm: 2 },
-                    flexDirection: { xs: "column-reverse", sm: "row" },
-                  }}
-                >
-                  <Button
-                    variant="outlined"
-                    onClick={() => {
-                      setFormData({
-                        claimNo: "",
-                        customerId: "",
-                        claimType: "",
-                        amount: "",
-                        nominee: "",
-                        date: null,
-                        bankAccountNo: "",
-                        nameOfClaimant: "",
-                        signature: null,
-                      });
-                      clearSignature();
-                    }}
-                    fullWidth={isMobile}
-                    sx={{
-                      fontSize: { xs: "0.875rem", sm: "1rem" },
-                    }}
-                  >
-                    Reset
-                  </Button>
+                {/* Submit Button */}
+                <Grid item xs={12} sx={{ textAlign: "right" }}>
                   <Button
                     type="submit"
                     variant="contained"
                     disabled={loading}
-                    fullWidth={isMobile}
-                    sx={{
-                      backgroundColor: "#0066cc",
-                      "&:hover": {
-                        backgroundColor: "#0052a3",
-                      },
-                      "&:disabled": {
-                        backgroundColor: "#cccccc",
-                      },
-                      fontSize: { xs: "0.875rem", sm: "1rem" },
-                    }}
+                    sx={{ backgroundColor: "#0066cc" }}
                   >
                     {loading ? "Submitting..." : "Submit Claim"}
                   </Button>
-                </Box>
+                </Grid>
               </Grid>
-            </Grid>
             )}
           </Box>
         </Paper>
@@ -856,4 +485,3 @@ const ClaimForm = () => {
 };
 
 export default ClaimForm;
-
