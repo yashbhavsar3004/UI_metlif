@@ -41,7 +41,7 @@ function App() {
         </Box>
       </SidebarProvider>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;
