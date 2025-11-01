@@ -59,19 +59,27 @@ const AdminDashboard = () => {
       // In a real application, you would fetch from API
       // const response = await claimFormAPI.getAllClaims();
       // setClaims(response.data);
-      
+
       // For now, using localStorage to get submitted forms
-      const savedClaims = JSON.parse(localStorage.getItem("submittedClaims") || "[]");
-      const savedPDFs = JSON.parse(localStorage.getItem("submittedPDFs") || "[]");
-      
+      const savedClaims = JSON.parse(
+        localStorage.getItem("submittedClaims") || "[]"
+      );
+      const savedPDFs = JSON.parse(
+        localStorage.getItem("submittedPDFs") || "[]"
+      );
+
       const allClaims = [
-        ...savedClaims.map(claim => ({ ...claim, type: "manual" })),
-        ...savedPDFs.map(pdf => ({ ...pdf, type: "pdf" })),
+        ...savedClaims.map((claim) => ({ ...claim, type: "manual" })),
+        ...savedPDFs.map((pdf) => ({ ...pdf, type: "pdf" })),
       ];
-      
-      setClaims(allClaims.sort((a, b) => 
-        new Date(b.submittedAt || b.uploadedAt) - new Date(a.submittedAt || a.uploadedAt)
-      ));
+
+      setClaims(
+        allClaims.sort(
+          (a, b) =>
+            new Date(b.submittedAt || b.uploadedAt) -
+            new Date(a.submittedAt || a.uploadedAt)
+        )
+      );
     } catch (err) {
       setError("Failed to fetch claims. Please try again.");
       console.error("Error fetching claims:", err);
@@ -128,14 +136,35 @@ const AdminDashboard = () => {
       rejected: "error",
       processing: "info",
     };
-    return <Chip label={status.toUpperCase()} color={colors[status] || "default"} size="small" />;
+    return (
+      <Chip
+        label={status.toUpperCase()}
+        color={colors[status] || "default"}
+        size="small"
+      />
+    );
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3, md: 4 }, px: { xs: 1, sm: 2 } }}>
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3, md: 4 }, borderRadius: { xs: 1, sm: 2 } }}>
+    <Container
+      maxWidth="xl"
+      sx={{ py: { xs: 2, sm: 3, md: 4 }, px: { xs: 1, sm: 2 } }}
+    >
+      <Paper
+        elevation={3}
+        sx={{ p: { xs: 2, sm: 3, md: 4 }, borderRadius: { xs: 1, sm: 2 } }}
+      >
         {/* Header */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, flexWrap: "wrap", gap: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
           <Typography
             variant="h4"
             component="h1"
@@ -159,10 +188,21 @@ const AdminDashboard = () => {
 
         {/* Tabs */}
         <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
-          <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
+          <Tabs
+            value={tabValue}
+            onChange={(e, newValue) => setTabValue(newValue)}
+          >
             <Tab label={`All Claims (${claims.length})`} />
-            <Tab label={`Manual Forms (${claims.filter(c => c.type === "manual").length})`} />
-            <Tab label={`PDF Uploads (${claims.filter(c => c.type === "pdf").length})`} />
+            <Tab
+              label={`Manual Forms (${
+                claims.filter((c) => c.type === "manual").length
+              })`}
+            />
+            <Tab
+              label={`PDF Uploads (${
+                claims.filter((c) => c.type === "pdf").length
+              })`}
+            />
           </Tabs>
         </Box>
 
@@ -184,7 +224,9 @@ const AdminDashboard = () => {
               setPage(0);
             }}
             InputProps={{
-              startAdornment: <SearchIcon sx={{ mr: 1, color: "text.secondary" }} />,
+              startAdornment: (
+                <SearchIcon sx={{ mr: 1, color: "text.secondary" }} />
+              ),
             }}
             sx={{ maxWidth: { sm: 600 } }}
           />
@@ -204,15 +246,33 @@ const AdminDashboard = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell><strong>Claim No</strong></TableCell>
-                    <TableCell><strong>Customer ID</strong></TableCell>
-                    <TableCell><strong>Claimant Name</strong></TableCell>
-                    <TableCell><strong>Claim Type</strong></TableCell>
-                    <TableCell><strong>Amount</strong></TableCell>
-                    <TableCell><strong>Date</strong></TableCell>
-                    <TableCell><strong>Type</strong></TableCell>
-                    <TableCell><strong>Status</strong></TableCell>
-                    <TableCell><strong>Actions</strong></TableCell>
+                    <TableCell>
+                      <strong>Claim No</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Customer ID</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Claimant Name</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Claim Type</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Amount</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Date</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Type</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Status</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Actions</strong>
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -227,12 +287,16 @@ const AdminDashboard = () => {
                   ) : (
                     paginatedClaims.map((claim, index) => (
                       <TableRow key={index} hover>
-                        <TableCell>{claim.claimNo || claim.fileName || "N/A"}</TableCell>
+                        <TableCell>
+                          {claim.claimNo || claim.fileName || "N/A"}
+                        </TableCell>
                         <TableCell>{claim.customerId || "N/A"}</TableCell>
                         <TableCell>{claim.nameOfClaimant || "N/A"}</TableCell>
                         <TableCell>{claim.claimType || "PDF Upload"}</TableCell>
                         <TableCell>
-                          {claim.amount ? `$${parseFloat(claim.amount).toFixed(2)}` : "N/A"}
+                          {claim.amount
+                            ? `$${parseFloat(claim.amount).toFixed(2)}`
+                            : "N/A"}
                         </TableCell>
                         <TableCell>
                           {claim.date
@@ -244,7 +308,9 @@ const AdminDashboard = () => {
                         <TableCell>
                           <Chip
                             label={claim.type === "manual" ? "Manual" : "PDF"}
-                            color={claim.type === "manual" ? "primary" : "secondary"}
+                            color={
+                              claim.type === "manual" ? "primary" : "secondary"
+                            }
                             size="small"
                           />
                         </TableCell>
@@ -336,7 +402,10 @@ const AdminDashboard = () => {
                   <Typography variant="h4">
                     $
                     {claims
-                      .reduce((sum, claim) => sum + (parseFloat(claim.amount) || 0), 0)
+                      .reduce(
+                        (sum, claim) => sum + (parseFloat(claim.amount) || 0),
+                        0
+                      )
                       .toFixed(2)}
                   </Typography>
                 </CardContent>
@@ -359,7 +428,13 @@ const AdminDashboard = () => {
         }}
       >
         <DialogTitle>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <Typography variant="h6">Claim Details</Typography>
             {selectedClaim?.type === "pdf" && (
               <Button
@@ -475,7 +550,10 @@ const AdminDashboard = () => {
                     </Typography>
                     <Typography variant="body1">
                       {selectedClaim.submittedAt
-                        ? format(new Date(selectedClaim.submittedAt), "MMMM dd, yyyy 'at' hh:mm a")
+                        ? format(
+                            new Date(selectedClaim.submittedAt),
+                            "MMMM dd, yyyy 'at' hh:mm a"
+                          )
                         : "N/A"}
                     </Typography>
                   </Grid>
@@ -514,7 +592,10 @@ const AdminDashboard = () => {
                     </Typography>
                     <Typography variant="body1">
                       {selectedClaim.uploadedAt
-                        ? format(new Date(selectedClaim.uploadedAt), "MMMM dd, yyyy 'at' hh:mm a")
+                        ? format(
+                            new Date(selectedClaim.uploadedAt),
+                            "MMMM dd, yyyy 'at' hh:mm a"
+                          )
                         : "N/A"}
                     </Typography>
                   </Grid>
@@ -532,4 +613,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-
