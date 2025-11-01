@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { parseISO, format } from 'date-fns';
 import axios from 'axios';
 import {
   Box,
@@ -100,7 +101,9 @@ const MyPolicies = () => {
                   </Typography>
 
                   <Typography variant="body2" color="text.secondary">
-                    <strong>Period:</strong> {p.startDate} to {p.endDate}
+                    <strong>Period:</strong>{' '}
+                    {p.startDate ? format(parseISO(p.startDate), 'dd MMM yyyy') : '-'} to{' '}
+                    {p.endDate ? format(parseISO(p.endDate), 'dd MMM yyyy') : '-'}
                   </Typography>
                 </CardContent>
               </Card>
