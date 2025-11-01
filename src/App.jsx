@@ -1,10 +1,11 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import { Box, Button, Typography, Container } from "@mui/material";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Box } from "@mui/material";
 import { SidebarProvider, useSidebar } from "./contexts/SidebarContext";
 import Navbar, { drawerWidth } from "./components/Navbar";
+import HomePage from "./pages/HomePage";
+import "./App.css";
 import ClaimForm from "./pages/ClaimForm";
 import AdminDashboard from "./pages/AdminDashboard";
-import "./App.css";
 
 const MainContent = () => {
   const { sidebarOpen } = useSidebar();
@@ -14,58 +15,22 @@ const MainContent = () => {
       component="main"
       sx={{
         flexGrow: 1,
-        p: 3,
         mt: 8, // Account for AppBar height
         minHeight: "calc(100vh - 64px)",
         backgroundColor: "#f5f5f5",
-        ml: sidebarOpen ? `${drawerWidth}px` : 0,
+        width: sidebarOpen ? `calc(100% - ${drawerWidth}px)` : "100%",
         transition: (theme) =>
-          theme.transitions.create("margin", {
+          theme.transitions.create("width", {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen,
           }),
       }}
     >
       <Routes>
-        <Route
-          path="/"
-          element={
-            <Container maxWidth="lg" sx={{ py: 4 }}>
-              <Box
-                sx={{
-                  textAlign: "center",
-                  py: 8,
-                }}
-              >
-                <Typography variant="h3" gutterBottom sx={{ color: "#0066cc", mb: 3 }}>
-                  Welcome to MetLife
-                </Typography>
-                <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-                  File your insurance claim with ease
-                </Typography>
-                <Button
-                  component={Link}
-                  to="/claim-form"
-                  variant="contained"
-                  size="large"
-                  sx={{
-                    backgroundColor: "#0066cc",
-                    "&:hover": {
-                      backgroundColor: "#0052a3",
-                    },
-                    px: 4,
-                    py: 1.5,
-                    fontSize: "1rem",
-                  }}
-                >
-                  Start Claim Form
-                </Button>
-              </Box>
-            </Container>
-          }
-        />
-        <Route path="/claim-form" element={<ClaimForm />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/" element={<HomePage sidebarOpen={sidebarOpen} />} />
+        <Route path="/claim-submition" element={<ClaimForm />} />
+        <Route path="/claims-submission" element={<ClaimForm />} />
+        <Route path="/agent-dashboard" element={<AdminDashboard />} />
       </Routes>
     </Box>
   );

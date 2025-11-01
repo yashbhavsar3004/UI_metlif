@@ -265,7 +265,6 @@ const ClaimForm = () => {
 
       setSuccess(true);
 
-      // Reset form
       setFormData({
         claimNo: "",
         customerId: "",
