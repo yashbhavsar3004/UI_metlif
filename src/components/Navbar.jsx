@@ -23,6 +23,7 @@ import {
   Search as SearchIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
+  Dashboard as DashboardIcon,
 } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import { useSidebar } from "../contexts/SidebarContext";
@@ -215,6 +216,37 @@ const Navbar = () => {
             </React.Fragment>
           );
         })}
+      </List>
+
+      <Divider sx={{ my: 2 }} />
+
+      {/* Admin Dashboard Link */}
+      <List>
+        <ListItem disablePadding>
+          <ListItemButton
+            component={Link}
+            to="/admin"
+            sx={{
+              py: 1.5,
+              px: 2,
+              "&:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+            }}
+          >
+            <ListItemIcon>
+              <DashboardIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="ADMIN DASHBOARD"
+              primaryTypographyProps={{
+                fontSize: "0.8125rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.6px",
+              }}
+            />
+          </ListItemButton>
+        </ListItem>
       </List>
 
       <Divider sx={{ my: 2 }} />

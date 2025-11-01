@@ -3,6 +3,7 @@ import { Box, Button, Typography, Container } from "@mui/material";
 import { SidebarProvider, useSidebar } from "./contexts/SidebarContext";
 import Navbar, { drawerWidth } from "./components/Navbar";
 import ClaimForm from "./pages/ClaimForm";
+import AdminDashboard from "./pages/AdminDashboard";
 import "./App.css";
 
 const MainContent = () => {
@@ -64,6 +65,7 @@ const MainContent = () => {
           }
         />
         <Route path="/claim-form" element={<ClaimForm />} />
+        <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </Box>
   );

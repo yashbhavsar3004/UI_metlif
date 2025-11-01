@@ -21,6 +21,8 @@ import { UploadFile as UploadFileIcon, Description as DescriptionIcon } from "@m
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { claimFormAPI } from "../services/api";
+import { format } from "date-fns";
 
 const ClaimForm = () => {
   const [formData, setFormData] = useState({
@@ -42,6 +44,9 @@ const ClaimForm = () => {
   const fileInputRef = useRef(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
   const claimTypes = [
     "Health Insurance",
@@ -193,20 +198,140 @@ const ClaimForm = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (uploadMode === "upload") {
-      if (!pdfFile) {
-        alert("Please upload a PDF file.");
-        return;
+    setError(null);
+    setSuccess(false);
+    setLoading(true);
+
+    try {
+      if (uploadMode === "upload") {
+        // PDF Upload Mode
+        if (!pdfFile) {
+          setError("Please upload a PDF file.");
+          setLoading(false);
+          return;
+        }
+
+        // Prepare payload for PDF upload
+        const payload = {
+          file: pdfFile,
+          fileName: pdfFile.name,
+          fileSize: pdfFile.size,
+          fileType: pdfFile.type,
+          uploadedAt: new Date().toISOString(),
+        };
+
+        // Log payload to console
+        console.log("📤 PDF Upload Payload:", payload);
+        console.log("📄 File Details:", {
+          name: pdfFile.name,
+          size: `${(pdfFile.size / 1024).toFixed(2)} KB`,
+          type: pdfFile.type,
+          lastModified: new Date(pdfFile.lastModified).toISOString(),
+        });
+
+        // Submit PDF via API
+        const response = await claimFormAPI.uploadPDFForm(pdfFile);
+        
+        console.log("✅ PDF Upload Response:", response);
+        
+        // Save to localStorage for admin dashboard
+        const pdfSubmission = {
+          fileName: pdfFile.name,
+          fileSize: pdfFile.size,
+          fileType: pdfFile.type,
+          uploadedAt: new Date().toISOString(),
+          status: "pending",
+        };
+        const existingPDFs = JSON.parse(localStorage.getItem("submittedPDFs") || "[]");
+        existingPDFs.push(pdfSubmission);
+        localStorage.setItem("submittedPDFs", JSON.stringify(existingPDFs));
+        
+        setSuccess(true);
+        
+        // Reset form after successful submission
+        setTimeout(() => {
+          setPdfFile(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+          setSuccess(false);
+        }, 3000);
+
+      } else {
+        // Manual Form Mode
+        // Validate required fields
+        if (!formData.claimNo || !formData.customerId || !formData.claimType || 
+            !formData.amount || !formData.nominee || !formData.date || 
+            !formData.bankAccountNo || !formData.nameOfClaimant || !formData.signature) {
+          setError("Please fill in all required fields including signature.");
+          setLoading(false);
+          return;
+        }
+
+        // Prepare payload for manual form submission
+        const payload = {
+          claimNo: formData.claimNo,
+          customerId: formData.customerId,
+          claimType: formData.claimType,
+          amount: parseFloat(formData.amount),
+          nominee: formData.nominee,
+          date: formData.date ? format(formData.date, "yyyy-MM-dd") : null,
+          bankAccountNo: formData.bankAccountNo,
+          nameOfClaimant: formData.nameOfClaimant,
+          signature: formData.signature,
+          submittedAt: new Date().toISOString(),
+        };
+
+        // Log payload to console
+        console.log("📤 Manual Form Payload:", payload);
+        console.log("📋 Form Data Details:", {
+          ...payload,
+          signatureBase64: formData.signature ? "Signature present (Base64 encoded)" : "No signature",
+        });
+
+        // Submit form via API
+        const response = await claimFormAPI.submitClaimForm(payload);
+        
+        console.log("✅ Form Submission Response:", response);
+        
+        // Save to localStorage for admin dashboard
+        const existingClaims = JSON.parse(localStorage.getItem("submittedClaims") || "[]");
+        existingClaims.push({
+          ...payload,
+          status: "pending",
+        });
+        localStorage.setItem("submittedClaims", JSON.stringify(existingClaims));
+        
+        setSuccess(true);
+
+        // Reset form after successful submission
+        setTimeout(() => {
+          setFormData({
+            claimNo: "",
+            customerId: "",
+            claimType: "",
+            amount: "",
+            nominee: "",
+            date: null,
+            bankAccountNo: "",
+            nameOfClaimant: "",
+            signature: null,
+          });
+          clearSignature();
+          setSuccess(false);
+        }, 3000);
       }
-      console.log("PDF File:", pdfFile);
-      // Handle PDF upload submission here
-      alert("PDF form submitted successfully!");
-    } else {
-      console.log("Form Data:", formData);
-      // Handle form submission here
-      alert("Claim form submitted successfully!");
+    } catch (err) {
+      console.error("❌ API Error:", err);
+      setError(
+        err.response?.data?.message || 
+        err.message || 
+        "Failed to submit form. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -248,6 +373,30 @@ const ClaimForm = () => {
           >
             Claim Form
           </Typography>
+
+          {/* Error Alert */}
+          {error && (
+            <Alert 
+              severity="error" 
+              onClose={() => setError(null)}
+              sx={{ mb: { xs: 2, sm: 3 } }}
+            >
+              {error}
+            </Alert>
+          )}
+
+          {/* Success Alert */}
+          {success && (
+            <Alert 
+              severity="success" 
+              onClose={() => setSuccess(false)}
+              sx={{ mb: { xs: 2, sm: 3 } }}
+            >
+              {uploadMode === "upload" 
+                ? "PDF form uploaded successfully!" 
+                : "Claim form submitted successfully!"}
+            </Alert>
+          )}
 
           {/* Mode Selection Tabs */}
           <Box 
@@ -417,17 +566,20 @@ const ClaimForm = () => {
                     <Button
                       type="submit"
                       variant="contained"
-                      disabled={!pdfFile}
+                      disabled={!pdfFile || loading}
                       fullWidth={isMobile}
                       sx={{
                         backgroundColor: "#0066cc",
                         "&:hover": {
                           backgroundColor: "#0052a3",
                         },
+                        "&:disabled": {
+                          backgroundColor: "#cccccc",
+                        },
                         fontSize: { xs: "0.875rem", sm: "1rem" },
                       }}
                     >
-                      Submit PDF
+                      {loading ? "Submitting..." : "Submit PDF"}
                     </Button>
                   </Box>
                 </Grid>
@@ -677,16 +829,20 @@ const ClaimForm = () => {
                   <Button
                     type="submit"
                     variant="contained"
+                    disabled={loading}
                     fullWidth={isMobile}
                     sx={{
                       backgroundColor: "#0066cc",
                       "&:hover": {
                         backgroundColor: "#0052a3",
                       },
+                      "&:disabled": {
+                        backgroundColor: "#cccccc",
+                      },
                       fontSize: { xs: "0.875rem", sm: "1rem" },
                     }}
                   >
-                    Submit Claim
+                    {loading ? "Submitting..." : "Submit Claim"}
                   </Button>
                 </Box>
               </Grid>
