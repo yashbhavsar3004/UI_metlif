@@ -1,31 +1,16 @@
-import { useState } from 'react'
-import {
-  Container,
-  Typography,
-  Button,
-  Box,
-  Card,
-  CardContent,
-  Stack,
-  AppBar,
-  Toolbar,
-  IconButton,
-  Chip,
-} from '@mui/material'
-import MenuIcon from '@mui/icons-material/Menu'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Navbar from './pages/Navbar'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <CreateBrowserRotes>
-        <Routes>
-          
-        </Routes>
-      </CreateBrowserRotes>
-    </>
+    <BrowserRouter>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<div>Home Page</div>} />
+        {/* Add more routes here */}
+      </Routes>
+    </BrowserRouter>
   )
 }
 
