@@ -278,11 +278,13 @@ const Navbar = () => {
                 component="img"
                 src="https://www.metlife.com/content/dam/metlifecom/us/icons-header/MetLife.png"
                 alt="MetLife"
+                crossOrigin="anonymous"
                 onError={() => handleImageError('appbar')}
                 sx={{
                   height: 30,
                   display: "block",
                   maxWidth: "100%",
+                  objectFit: "contain",
                 }}
               />
             ) : (
