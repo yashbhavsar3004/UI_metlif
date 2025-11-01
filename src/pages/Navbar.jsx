@@ -3,19 +3,18 @@ import {
   AppBar,
   Toolbar,
   Box,
-  Button,
-  Menu,
-  MenuItem,
-  IconButton,
   Drawer,
   List,
   ListItem,
   ListItemButton,
   ListItemText,
+  ListItemIcon,
   Divider,
   Typography,
-  Container,
+  IconButton,
+  Collapse,
   Stack,
+  Button,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -23,109 +22,190 @@ import {
   Person as PersonIcon,
   Search as SearchIcon,
   ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
 } from "@mui/icons-material";
 import { Link } from "react-router-dom";
+import { useSidebar } from "../contexts/SidebarContext";
+
+export const drawerWidth = 280;
 
 const Navbar = () => {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEls, setAnchorEls] = useState({});
+  const { sidebarOpen, toggleSidebar } = useSidebar();
+  const [expandedItems, setExpandedItems] = useState({});
+  const [imageError, setImageError] = useState({});
 
-  const navItems = ["SOLUTIONS", "SUPPORT", "ABOUT US", "RESOURCES"];
-
-  const handleToggleMobile = () => {
-    setMobileOpen((prev) => !prev);
+  const handleImageError = (location) => {
+    setImageError((prev) => ({ ...prev, [location]: true }));
   };
 
-  const handleMenuOpen = (event, key) => {
-    setAnchorEls((prev) => ({
+  const navItems = [
+    {
+      label: "SOLUTIONS",
+      subItems: ["Example link 1", "Example link 2", "Example link 3"],
+    },
+    {
+      label: "SUPPORT",
+      subItems: ["Example link 1", "Example link 2", "Example link 3"],
+    },
+    {
+      label: "ABOUT US",
+      subItems: ["Example link 1", "Example link 2", "Example link 3"],
+    },
+    {
+      label: "RESOURCES",
+      subItems: ["Example link 1", "Example link 2", "Example link 3"],
+    },
+  ];
+
+
+  const handleToggleExpand = (label) => {
+    setExpandedItems((prev) => ({
       ...prev,
-      [key]: event.currentTarget,
+      [label]: !prev[label],
     }));
   };
 
-  const handleMenuClose = (key) => {
-    setAnchorEls((prev) => ({
-      ...prev,
-      [key]: null,
-    }));
-  };
-
-  const renderDropdownMenu = (label, key) => {
-    const anchorEl = anchorEls[key];
-    const open = Boolean(anchorEl);
-
-    return (
-      <Box key={key} sx={{ position: "relative" }}>
-        <Button
-          onClick={(e) => handleMenuOpen(e, key)}
-          endIcon={<ExpandMoreIcon />}
+  const sidebarContent = (
+    <Box sx={{ width: drawerWidth, height: "100%" }}>
+      {/* Logo Section */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          p: 2,
+          borderBottom: "1px solid #e6e6e6",
+        }}
+      >
+        <Box
+          component={Link}
+          to="/"
           sx={{
-            color: "inherit",
-            textTransform: "uppercase",
-            fontSize: "0.8125rem",
-            letterSpacing: "0.6px",
-            fontWeight: 400,
-            "&:hover": {
-              backgroundColor: "rgba(255, 255, 255, 0.08)",
-            },
+            display: "flex",
+            alignItems: "center",
+            textDecoration: "none",
           }}
         >
-          {label}
-        </Button>
-        <Menu
-          anchorEl={anchorEl}
-          open={open}
-          onClose={() => handleMenuClose(key)}
-          MenuListProps={{
-            "aria-labelledby": key,
-          }}
-          PaperProps={{
-            sx: {
-              mt: 1.5,
-              minWidth: 200,
-              boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
-            },
-          }}
+          {!imageError.sidebar ? (
+            <Box
+              component="img"
+              src="https://www.metlife.com/content/dam/metlifecom/us/icons-header/MetLife.png"
+              alt="MetLife"
+              crossOrigin="anonymous"
+              onError={() => handleImageError('sidebar')}
+              sx={{
+                height: 30,
+                display: "block",
+                maxWidth: "100%",
+                objectFit: "contain",
+              }}
+            />
+          ) : (
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                color: "#0066cc",
+                fontSize: "1.25rem",
+              }}
+            >
+              MetLife
+            </Typography>
+          )}
+        </Box>
+        <IconButton
+          onClick={toggleSidebar}
+          sx={{ display: { sm: "none" } }}
         >
-          <MenuItem onClick={() => handleMenuClose(key)}>
-            Example link 1
-          </MenuItem>
-          <MenuItem onClick={() => handleMenuClose(key)}>
-            Example link 2
-          </MenuItem>
-          <MenuItem onClick={() => handleMenuClose(key)}>
-            Example link 3
-          </MenuItem>
-        </Menu>
+          <CloseIcon />
+        </IconButton>
       </Box>
-    );
-  };
 
-  const mobileMenu = (
-    <Box
-      onClick={handleToggleMobile}
-      onKeyDown={handleToggleMobile}
-      sx={{ width: "auto" }}
-    >
+      {/* Navigation Items */}
+      <List sx={{ pt: 2 }}>
+        {navItems.map((item) => {
+          const isExpanded = expandedItems[item.label];
+          return (
+            <React.Fragment key={item.label}>
+              <ListItem disablePadding>
+                <ListItemButton
+                  onClick={() => handleToggleExpand(item.label)}
+                  sx={{
+                    py: 1.5,
+                    px: 2,
+                    "&:hover": {
+                      backgroundColor: "rgba(0, 0, 0, 0.04)",
+                    },
+                  }}
+                >
+                  <ListItemText
+                    primary={item.label}
+                    primaryTypographyProps={{
+                      fontSize: "0.8125rem",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.6px",
+                      fontWeight: 400,
+                    }}
+                  />
+                  <ListItemIcon sx={{ minWidth: "auto" }}>
+                    {isExpanded ? (
+                      <ExpandLessIcon fontSize="small" />
+                    ) : (
+                      <ExpandMoreIcon fontSize="small" />
+                    )}
+                  </ListItemIcon>
+                </ListItemButton>
+              </ListItem>
+              <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  {item.subItems.map((subItem, index) => (
+                    <ListItem key={index} disablePadding>
+                      <ListItemButton
+                        component={Link}
+                        to="#"
+                        sx={{
+                          pl: 4,
+                          py: 1,
+                          "&:hover": {
+                            backgroundColor: "rgba(0, 0, 0, 0.04)",
+                          },
+                        }}
+                      >
+                        <ListItemText
+                          primary={subItem}
+                          primaryTypographyProps={{
+                            fontSize: "0.875rem",
+                          }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              </Collapse>
+            </React.Fragment>
+          );
+        })}
+      </List>
+
+      <Divider sx={{ my: 2 }} />
+
+      {/* Utilities Section */}
       <List>
-        {navItems.map((item, index) => (
-          <ListItem key={item} disablePadding>
-            <ListItemButton component={Link} to="#" sx={{ py: 1.5 }}>
-              <ListItemText
-                primary={item}
-                primaryTypographyProps={{
-                  fontSize: "0.875rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.6px",
-                }}
-              />
-            </ListItemButton>
-          </ListItem>
-        ))}
-        <Divider sx={{ my: 1 }} />
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="#" sx={{ py: 1.5 }}>
-            <PersonIcon sx={{ mr: 1, fontSize: "1.125rem" }} />
+          <ListItemButton
+            component={Link}
+            to="#"
+            sx={{
+              py: 1.5,
+              px: 2,
+              "&:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+            }}
+          >
+            <ListItemIcon>
+              <PersonIcon />
+            </ListItemIcon>
             <ListItemText
               primary="LOG IN"
               primaryTypographyProps={{
@@ -137,8 +217,18 @@ const Navbar = () => {
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton sx={{ py: 1.5 }}>
-            <SearchIcon sx={{ mr: 1, fontSize: "1.125rem" }} />
+          <ListItemButton
+            sx={{
+              py: 1.5,
+              px: 2,
+              "&:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+            }}
+          >
+            <ListItemIcon>
+              <SearchIcon />
+            </ListItemIcon>
             <ListItemText
               primary="SEARCH"
               primaryTypographyProps={{
@@ -154,91 +244,64 @@ const Navbar = () => {
   );
 
   return (
-    <AppBar
-      position="static"
-      sx={{
-        backgroundColor: "#fff",
-        color: "#000",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-      }}
-    >
-      <Container maxWidth="xl">
-        <Toolbar
-          disableGutters
-          sx={{
-            minHeight: { xs: 56, sm: 64 },
-            justifyContent: "space-between",
-            py: 1,
-          }}
-        >
-          {/* Mobile menu button */}
+    <>
+      {/* Top AppBar */}
+      <AppBar
+        position="fixed"
+        sx={{
+          backgroundColor: "#fff",
+          color: "#000",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+      >
+        <Toolbar>
           <IconButton
             color="inherit"
-            aria-label="toggle navigation"
             edge="start"
-            onClick={handleToggleMobile}
-            sx={{ mr: 1, display: { md: "none" } }}
+            onClick={toggleSidebar}
+            sx={{ mr: 2 }}
           >
-            {mobileOpen ? <CloseIcon /> : <MenuIcon />}
+            <MenuIcon />
           </IconButton>
-
-          {/* Logo */}
           <Box
             component={Link}
             to="/"
             sx={{
-              display: "flex",
+              display: { xs: "flex", sm: "none" },
               alignItems: "center",
               textDecoration: "none",
-              mr: { xs: 1, sm: 2 },
             }}
           >
-            <Box
-              component="img"
-              src="/content/dam/metlifecom/us/icons-header/MetLife.png"
-              alt="MetLife"
-              sx={{
-                height: 36,
-                display: "block",
-              }}
-            />
+            {!imageError.appbar ? (
+              <Box
+                component="img"
+                src="https://www.metlife.com/content/dam/metlifecom/us/icons-header/MetLife.png"
+                alt="MetLife"
+                crossOrigin="anonymous"
+                onError={() => handleImageError('appbar')}
+                sx={{
+                  height: 30,
+                  display: "block",
+                  maxWidth: "100%",
+                  objectFit: "contain",
+                }}
+              />
+            ) : (
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  color: "#0066cc",
+                  fontSize: "1rem",
+                }}
+              >
+                MetLife
+              </Typography>
+            )}
           </Box>
-
-          {/* Logo divider */}
-          <Divider
-            orientation="vertical"
-            flexItem
-            sx={{
-              display: { xs: "none", sm: "block" },
-              mr: 2,
-              borderColor: "#e6e6e6",
-            }}
-          />
-
-          {/* Desktop Navigation */}
-          <Box
-            sx={{
-              flexGrow: 1,
-              display: { xs: "none", md: "flex" },
-              gap: 1.5,
-              alignItems: "center",
-            }}
-          >
-            {navItems.map((item, index) => {
-              const key = `section${index + 1}`;
-              return renderDropdownMenu(item, key);
-            })}
-          </Box>
-
-          {/* Utilities: Login + Search */}
-          <Stack
-            direction="row"
-            spacing={1.5}
-            sx={{
-              display: { xs: "none", sm: "flex" },
-              alignItems: "center",
-            }}
-          >
+          <Box sx={{ flexGrow: 1 }} />
+          <Stack direction="row" spacing={1} sx={{ display: { xs: "none", sm: "flex" } }}>
             <Button
               component={Link}
               to="#"
@@ -249,7 +312,6 @@ const Navbar = () => {
                 fontSize: "0.8125rem",
                 letterSpacing: "0.6px",
                 fontWeight: 400,
-                minWidth: "auto",
                 "&:hover": {
                   backgroundColor: "rgba(0, 0, 0, 0.04)",
                 },
@@ -261,57 +323,48 @@ const Navbar = () => {
               color="inherit"
               aria-label="search"
               sx={{
-                textTransform: "uppercase",
-                fontSize: "0.8125rem",
-                letterSpacing: "0.6px",
                 "&:hover": {
                   backgroundColor: "rgba(0, 0, 0, 0.04)",
                 },
               }}
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                }}
-              >
-                <SearchIcon sx={{ fontSize: "1.125rem" }} />
-                <Typography
-                  component="span"
-                  sx={{
-                    fontSize: "0.8125rem",
-                    letterSpacing: "0.6px",
-                    display: { xs: "none", sm: "inline" },
-                  }}
-                >
-                  SEARCH
-                </Typography>
-              </Box>
+              <SearchIcon />
             </IconButton>
           </Stack>
         </Toolbar>
-      </Container>
+      </AppBar>
 
-      {/* Mobile Drawer */}
+      {/* Left Sidebar Drawer */}
       <Drawer
+        variant="persistent"
         anchor="left"
-        open={mobileOpen}
-        onClose={handleToggleMobile}
-        ModalProps={{
-          keepMounted: true, // Better open performance on mobile
-        }}
-        PaperProps={{
-          sx: {
-            width: { xs: "80%", sm: 280 },
+        open={sidebarOpen}
+        sx={{
+          width: sidebarOpen ? drawerWidth : 0,
+          flexShrink: 0,
+          transition: (theme) =>
+            theme.transitions.create("width", {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            boxSizing: "border-box",
+            borderRight: "1px solid #e6e6e6",
             top: 64,
-            boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+            height: "calc(100% - 64px)",
+            transition: (theme) =>
+              theme.transitions.create("width", {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
+            overflowX: "hidden",
           },
         }}
       >
-        {mobileMenu}
+        {sidebarContent}
       </Drawer>
-    </AppBar>
+    </>
   );
 };
 
