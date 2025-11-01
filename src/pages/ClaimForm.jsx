@@ -26,6 +26,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { format } from "date-fns";
 import { claimFormAPI } from "../services/api"; // <-- your API service
+import { exportClaimsToExcel } from "../utility/exportClaims";
 
 const ClaimForm = () => {
   const [formData, setFormData] = useState({
@@ -383,14 +384,7 @@ const ClaimForm = () => {
                       value={formData.claimType}
                       onChange={(e) => handleInputChange("claimType")(e)}
                     >
-                      {[
-                        "Health",
-                        "Life",
-                        "Vehicle",
-                        "Travel",
-                        "Property",
-                        "Other",
-                      ].map((t) => (
+                      {["Health", "Life", "Accidental"].map((t) => (
                         <MenuItem key={t} value={t}>
                           {t}
                         </MenuItem>

@@ -172,7 +172,7 @@ const Navbar = () => {
                 <DashboardIcon />
               </ListItemIcon>
               <ListItemText
-                primary="AGENT DASHBOARD"
+                primary="DASHBOARD"
                 primaryTypographyProps={{
                   fontSize: "0.8125rem",
                   textTransform: "uppercase",

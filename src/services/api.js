@@ -4,7 +4,9 @@ import axios from "axios";
 // Note: Vite uses import.meta.env instead of process.env
 // Environment variables must be prefixed with VITE_
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://api.example.com",
+  baseURL:
+    import.meta.env.VITE_API_BASE_URL ||
+    "https://rapacious-tammi-unfeudally.ngrok-free.dev",
   timeout: 30000, // 30 seconds
   headers: {
     "Content-Type": "application/json",
@@ -14,11 +16,6 @@ const api = axios.create({
 // Request interceptor for adding auth tokens or other headers
 api.interceptors.request.use(
   (config) => {
-    // You can add authentication token here if needed
-    // const token = localStorage.getItem("token");
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
     return config;
   },
   (error) => {
@@ -32,13 +29,9 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Handle common errors here
     if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
       console.error("API Error:", error.response.data);
     } else if (error.request) {
-      // The request was made but no response was received
       console.error("Network Error:", error.request);
     } else {
       // Something happened in setting up the request that triggered an Error
@@ -65,8 +58,8 @@ export const claimFormAPI = {
     try {
       const formData = new FormData();
       formData.append("file", pdfFile);
-      
-      const response = await api.post("/api/claims/upload", formData, {
+
+      const response = await api.post("/extract-claim", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -99,4 +92,3 @@ export const claimFormAPI = {
 };
 
 export default api;
-
