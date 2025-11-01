@@ -122,7 +122,14 @@ const Navbar = () => {
 
       {/* Show logged in user name under logo when available */}
       {sidebarOpen && user && (
-        <Box sx={{ p: 2, borderBottom: '1px solid #f0f0f0', display: 'flex', flexDirection: 'column' }}>
+        <Box
+          sx={{
+            p: 2,
+            borderBottom: "1px solid #f0f0f0",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
             {user.name}
           </Typography>
@@ -137,22 +144,30 @@ const Navbar = () => {
       {/* New Sidebar Navigation Buttons */}
       <Box sx={{ pt: sidebarOpen ? 1 : 0 }}>
         <List>
-          {role === 'customer' && (
+          {role === "customer" && (
             <>
               <ListItem disablePadding>
                 <ListItemButton
                   onClick={() => {
-                    navigate('/claim-submition');
+                    navigate("/claim-submition");
                     if (sidebarOpen) toggleSidebar();
                   }}
-                  sx={{ py: 1.5, px: 2, '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)' } }}
+                  sx={{
+                    py: 1.5,
+                    px: 2,
+                    "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
+                  }}
                 >
                   <ListItemIcon>
                     <DescriptionIcon />
                   </ListItemIcon>
                   <ListItemText
                     primary="CLAIMS SUBMISSION"
-                    primaryTypographyProps={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.6px' }}
+                    primaryTypographyProps={{
+                      fontSize: "0.8125rem",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.6px",
+                    }}
                   />
                 </ListItemButton>
               </ListItem>
@@ -160,38 +175,54 @@ const Navbar = () => {
               <ListItem disablePadding>
                 <ListItemButton
                   onClick={() => {
-                    navigate('/my-policies');
+                    navigate("/my-policies");
                     if (sidebarOpen) toggleSidebar();
                   }}
-                  sx={{ py: 1.5, px: 2, '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)' } }}
+                  sx={{
+                    py: 1.5,
+                    px: 2,
+                    "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
+                  }}
                 >
                   <ListItemIcon>
                     <PolicyIcon />
                   </ListItemIcon>
                   <ListItemText
                     primary="MY POLICIES"
-                    primaryTypographyProps={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.6px' }}
+                    primaryTypographyProps={{
+                      fontSize: "0.8125rem",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.6px",
+                    }}
                   />
                 </ListItemButton>
               </ListItem>
             </>
           )}
 
-          {role === 'agent' && (
+          {role === "agent" && (
             <ListItem disablePadding>
               <ListItemButton
                 onClick={() => {
-                  navigate('/agent-dashboard');
+                  navigate("/agent-dashboard");
                   if (sidebarOpen) toggleSidebar();
                 }}
-                sx={{ py: 1.5, px: 2, '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)' } }}
+                sx={{
+                  py: 1.5,
+                  px: 2,
+                  "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
+                }}
               >
                 <ListItemIcon>
                   <DashboardIcon />
                 </ListItemIcon>
                 <ListItemText
                   primary="DASHBOARD"
-                  primaryTypographyProps={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.6px' }}
+                  primaryTypographyProps={{
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.6px",
+                  }}
                 />
               </ListItemButton>
             </ListItem>
@@ -201,17 +232,25 @@ const Navbar = () => {
             <ListItem disablePadding>
               <ListItemButton
                 onClick={() => {
-                  navigate('/login');
+                  navigate("/login");
                   if (sidebarOpen) toggleSidebar();
                 }}
-                sx={{ py: 1.5, px: 2, '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)' } }}
+                sx={{
+                  py: 1.5,
+                  px: 2,
+                  "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
+                }}
               >
                 <ListItemIcon>
                   <PersonIcon />
                 </ListItemIcon>
                 <ListItemText
                   primary="LOGIN"
-                  primaryTypographyProps={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.6px' }}
+                  primaryTypographyProps={{
+                    fontSize: "0.8125rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.6px",
+                  }}
                 />
               </ListItemButton>
             </ListItem>
@@ -296,40 +335,40 @@ const Navbar = () => {
             spacing={1}
             sx={{ display: { xs: "none", sm: "flex" } }}
           >
-              {!role ? (
-                <Button
-                  startIcon={<PersonIcon />}
-                  onClick={() => navigate('/login')}
-                  sx={{
-                    color: 'inherit',
-                    textTransform: 'uppercase',
-                    fontSize: '0.8125rem',
-                    letterSpacing: '0.6px',
-                    fontWeight: 400,
-                    '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' },
-                  }}
-                >
-                  LOG IN
-                </Button>
-              ) : (
-                <Button
-                  startIcon={<PersonIcon />}
-                  onClick={() => {
-                    logout();
-                    navigate('/');
-                  }}
-                  sx={{
-                    color: 'inherit',
-                    textTransform: 'uppercase',
-                    fontSize: '0.8125rem',
-                    letterSpacing: '0.6px',
-                    fontWeight: 400,
-                    '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' },
-                  }}
-                >
-                  LOG OUT
-                </Button>
-              )}
+            {!role ? (
+              <Button
+                startIcon={<PersonIcon />}
+                onClick={() => navigate("/login")}
+                sx={{
+                  color: "inherit",
+                  textTransform: "uppercase",
+                  fontSize: "0.8125rem",
+                  letterSpacing: "0.6px",
+                  fontWeight: 400,
+                  "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+                }}
+              >
+                LOG IN
+              </Button>
+            ) : (
+              <Button
+                startIcon={<PersonIcon />}
+                onClick={() => {
+                  logout();
+                  navigate("/");
+                }}
+                sx={{
+                  color: "inherit",
+                  textTransform: "uppercase",
+                  fontSize: "0.8125rem",
+                  letterSpacing: "0.6px",
+                  fontWeight: 400,
+                  "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+                }}
+              >
+                LOG OUT
+              </Button>
+            )}
           </Stack>
         </Toolbar>
       </AppBar>
