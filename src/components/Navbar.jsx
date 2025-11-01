@@ -40,12 +40,12 @@ const Navbar = () => {
 
   const navItems = [
     {
-      label: "SOLUTIONS",
-      subItems: ["Example link 1", "Example link 2", "Example link 3"],
+      label: "CLAIM FORM",
+      link: "/claim-form",
     },
     {
       label: "SUPPORT",
-      subItems: ["Example link 1", "Example link 2", "Example link 3"],
+      link: "/support",
     },
     {
       label: "ABOUT US",
@@ -124,6 +124,36 @@ const Navbar = () => {
       {/* Navigation Items */}
       <List sx={{ pt: 2 }}>
         {navItems.map((item) => {
+          // If item has a direct link (no sub-navigation)
+          if (item.link) {
+            return (
+              <ListItem key={item.label} disablePadding>
+                <ListItemButton
+                  component={Link}
+                  to={item.link}
+                  sx={{
+                    py: 1.5,
+                    px: 2,
+                    "&:hover": {
+                      backgroundColor: "rgba(0, 0, 0, 0.04)",
+                    },
+                  }}
+                >
+                  <ListItemText
+                    primary={item.label}
+                    primaryTypographyProps={{
+                      fontSize: "0.8125rem",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.6px",
+                      fontWeight: 400,
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          }
+
+          // If item has sub-navigation (expandable)
           const isExpanded = expandedItems[item.label];
           return (
             <React.Fragment key={item.label}>
