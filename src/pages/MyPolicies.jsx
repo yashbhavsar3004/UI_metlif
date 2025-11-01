@@ -103,11 +103,6 @@ const MyPolicies = () => {
                     <strong>Period:</strong> {p.startDate} to {p.endDate}
                   </Typography>
                 </CardContent>
-
-                <CardActions>
-                  <Button size="small">View Details</Button>
-                  <Button size="small">Download</Button>
-                </CardActions>
               </Card>
             </Grid>
           ))}
